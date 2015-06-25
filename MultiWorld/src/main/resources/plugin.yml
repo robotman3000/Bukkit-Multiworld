@@ -1,0 +1,61 @@
+name: Multiworld
+main: io.github.robotman3000.bukkit.multiworld.MultiWorld
+version: 0.0.4-SNAPSHOT
+commands:
+   mwcreate:
+      description: This allows you to create a world or load an existing world.
+      usage: /<command> <World Name> [-s(seed)] [-t(world type)] [-e(world environment)] [-b(generate structures)] [-g(generator:options)]
+      permission: multiworld.create
+      permission-message: You don't have <permission>
+   mwunload:
+      description: This allows you to unload a world.
+      usage: /<command> <World Name>
+      permission: multiworld.unload
+      permission-message: You don't have <permission>
+   mwdelete:
+      description: This allows you to delete a world and all its data.
+      usage: /<command> <World Name>
+      permission: multiworld.delete
+      permission-message: You don't have <permission>
+   mwinfo:
+      description: This allows you to get info for a world.
+      usage: /<command> [World Name]
+      permission: multiworld.info
+      permission-message: You don't have <permission>
+   mwlist:
+      description: Lists all loaded worlds on the server.
+      usage: /<command>
+      permission: multiworld.list
+      permission-message: You don't have <permission>
+   mwgamerule:
+      description: This allows you get and set gamerules.
+      usage: |
+             /<command> <set> <gamerule> <value> [worldname]
+             /<command> <get> <gamerule> [worldname]
+      permission: multiworld.gamerule
+      permission-message: You don't have <permission>
+   goto:
+      description: Teleport to a world.
+      usage: /<command> <world> [player]
+      permission: multiworld.teleport
+      permission-message: You don't have <permission>
+   increate:
+      description: Teleport to a world.
+      usage: /<command> <world> [player]
+      permission: multiworld.teleport
+      permission-message: You don't have <permission>
+   inlist:
+      description: Teleport to a world.
+      usage: /<command> <world> [player]
+      permission: multiworld.teleport
+      permission-message: You don't have <permission>
+   inset:
+      description: Teleport to a world.
+      usage: /<command> <world> [player]
+      permission: multiworld.teleport
+      permission-message: You don't have <permission>
+   ininfo:
+      description: Teleport to a world.
+      usage: /<command> <world> [player]
+      permission: multiworld.teleport
+      permission-message: You don't have <permission>
