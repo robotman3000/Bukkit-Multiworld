@@ -1,18 +1,16 @@
-package io.github.robotman3000.bukkit.multiworld;
+package io.github.robotman3000.bukkit.multiworld.inventory;
 
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class InventoryConfig {
-	private String inventoryId = UUID.randomUUID().toString();
-	private String defaultPlayer = "noPlayer";
+public class BukkitInventory {
+	private UUID inventoryId = UUID.randomUUID();
 	private boolean canFly = false;
 	private FixedLocation bedSpawnPoint = new FixedLocation(getAWorld().getSpawnLocation());
 	private FixedLocation compassTarget = new FixedLocation(getAWorld().getSpawnLocation());
@@ -23,62 +21,36 @@ public class InventoryConfig {
 	private int fireTicks = 0;
 	private boolean isFlying = false;
 	private int foodLevel = 20;
-	private GameMode gamemode = GameMode.SURVIVAL;
 	private double healthPoints = 20;
 	private int xpLevel = 0;
 	private int remainingAir = 300;
 	private float foodSaturation;
 	private Vector velocity = new Vector();
-	private ItemStack[] armorContents = new ItemStack[0];
-	private ItemStack[] inventoryContents = new ItemStack[0];
-	private ItemStack[] enderChest = new ItemStack[0];
+	private transient ItemStack[] armorContents = new ItemStack[0];
+	private transient ItemStack[] inventoryContents = new ItemStack[0];
+	private transient ItemStack[] enderChest = new ItemStack[0];
 	private FixedLocation playerLocation = new FixedLocation(getAWorld().getSpawnLocation());
+	private PlayerState playerState;
 
 	/**
 	 * This constructor is meant for use by gson
 	 * @Deprecated
 	 */
 	@Deprecated
-	public InventoryConfig(){
+	public BukkitInventory(){
 		
 	}
 
-	public InventoryConfig(Player player){
-		setCanFly(player.getAllowFlight());
-		setBedSpawnPoint(player.getBedSpawnLocation());
-		setCompassTarget(player.getCompassTarget());
-		setDisplayName(player.getDisplayName());
-		setExhaustion(player.getExhaustion());
-		setXpPoints(player.getExp());
-		setFallDistance(player.getFallDistance());
-		setFireTicks(player.getFireTicks());
-		setFlying(player.isFlying());
-		setFoodLevel(player.getFoodLevel());
-		setGamemode(player.getGameMode());
-		setHealthPoints(player.getHealth());
-		setXpLevel(player.getLevel());
-		setRemainingAir(player.getRemainingAir());
-		setFoodSaturation(player.getSaturation());
-		setVelocity(player.getVelocity());
-		setArmorContents(player.getInventory().getArmorContents());
-		setInventoryContents(player.getInventory().getContents());
-		setEnderChest(player.getEnderChest().getContents());
-		setLocation(player.getLocation());
+	public BukkitInventory(PlayerState playerState){
+		this.setPlayerState(playerState);
+		this.configureForplayer(playerState.getPlayer());
 	}
-	
+
 	protected void setLocation(Location location) {
 		this.playerLocation = new FixedLocation(location);
 	}
 
-	public void makeDefaultForPlayer(Player player) {
-		defaultPlayer = player.getUniqueId().toString();
-	}
-
-	public String getDefaultPlayer() {
-		return defaultPlayer;
-	}
-
-	public String getInventoryId() {
+	public UUID getInventoryId() {
 		return inventoryId;
 	}
 
@@ -122,10 +94,6 @@ public class InventoryConfig {
 		return foodLevel;
 	}
 
-	public GameMode getGamemode() {
-		return gamemode;
-	}
-
 	public double getHealthPoints() {
 		return healthPoints;
 	}
@@ -152,14 +120,6 @@ public class InventoryConfig {
 
 	public ItemStack[] getInventoryContents() {
 		return inventoryContents;
-	}
-
-	protected void setInventoryId(String inventoryId) {
-		this.inventoryId = inventoryId;
-	}
-
-	protected void setDefaultPlayer(String defaultPlayer) {
-		this.defaultPlayer = defaultPlayer;
 	}
 
 	protected void setCanFly(boolean canFly) {
@@ -202,10 +162,6 @@ public class InventoryConfig {
 		this.foodLevel = foodLevel;
 	}
 
-	protected void setGamemode(GameMode gamemode) {
-		this.gamemode = gamemode;
-	}
-
 	protected void setHealthPoints(double healthPoints) {
 		this.healthPoints = healthPoints;
 	}
@@ -225,7 +181,7 @@ public class InventoryConfig {
 	protected void setVelocity(Vector velocity) {
 		this.velocity = velocity;
 	}
-
+	
 	protected void setArmorContents(ItemStack[] armorContents) {
 		this.armorContents = armorContents;
 	}
@@ -248,9 +204,9 @@ public class InventoryConfig {
 	
 	@Override
 	public boolean equals(Object conf){
-		if(conf instanceof InventoryConfig){
-			InventoryConfig inv = (InventoryConfig) conf;
-			if(this.inventoryId.equalsIgnoreCase(inv.inventoryId)){
+		if(conf instanceof BukkitInventory){
+			BukkitInventory inv = (BukkitInventory) conf;
+			if(this.inventoryId.equals(inv.inventoryId)){
 				return true;
 			}
 		}
@@ -260,8 +216,8 @@ public class InventoryConfig {
 	private World getAWorld(){
 		return Bukkit.getServer().getWorlds().get(0);
 	}
-
-	public void updateContents(Player player) {
+	
+	private void configureForplayer(Player player){
 		setCanFly(player.getAllowFlight());
 		setBedSpawnPoint(player.getBedSpawnLocation());
 		setCompassTarget(player.getCompassTarget());
@@ -272,7 +228,6 @@ public class InventoryConfig {
 		setFireTicks(player.getFireTicks());
 		setFlying(player.isFlying());
 		setFoodLevel(player.getFoodLevel());
-		setGamemode(player.getGameMode());
 		setHealthPoints(player.getHealth());
 		setXpLevel(player.getLevel());
 		setRemainingAir(player.getRemainingAir());
@@ -282,5 +237,13 @@ public class InventoryConfig {
 		setInventoryContents(player.getInventory().getContents());
 		setEnderChest(player.getEnderChest().getContents());
 		setLocation(player.getLocation());
+	}
+
+	public PlayerState getPlayerState() {
+		return playerState;
+	}
+
+	private void setPlayerState(PlayerState playerState) {
+		this.playerState = playerState;
 	}
 }

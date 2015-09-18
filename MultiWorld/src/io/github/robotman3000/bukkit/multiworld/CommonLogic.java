@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World.Environment;
 
 public class CommonLogic {
 
@@ -58,5 +60,24 @@ public class CommonLogic {
 			Bukkit.getLogger().warning("Error saving config file");
 			e.printStackTrace();
 		}
+	}
+
+	public static ChatColor printEnvColor(Environment environment) {
+		if(environment.equals(Environment.NORMAL)){
+			return ChatColor.GREEN;
+		} else if(environment.equals(Environment.NETHER)){
+			return ChatColor.RED;
+		} else if(environment.equals(Environment.THE_END)){
+			return ChatColor.BLACK;
+		}
+		return ChatColor.WHITE;
+	}
+	
+	public static void printDebug(String message){
+		if(message == null){
+			message = "";
+		}
+		
+		Bukkit.getLogger().warning(message);
 	}
 }
