@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,52 +17,99 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 public class WorldManager implements Listener, CommandExecutor {
 
 	public final String[] commands = {"mwcreate", /*"mwdelete",*/ "mwload", "mwunload", "mwinfo", "mwlist"/*, "mwgamerule"*/};
 	private BukkitWorlds worlds = new BukkitWorlds();
-	private final MultiWorld plugin;	
+	private final MultiWorld plugin;
+	
+	public boolean autoLoadWorlds;
+	public boolean overrideDefaultWorlds;
 	
 	public WorldManager(MultiWorld multiWorld) {
 		this.plugin = multiWorld;
 	}
 
 	public void loadWorldConfig() {
+		Bukkit.getLogger().info("WorldManager: Loading World Configuration");
 		List<String> worldList = plugin.getConfig().getStringList("world.worlds");
-		Gson gson = new Gson();
-		for(String conf : worldList){
-			String[] confStr = conf.split(":");
-			//UUID.fromString(confStr[0]);
-			for(File file : Bukkit.getWorldContainer().listFiles()){
-				if(file.isDirectory() && file.getName().contentEquals(confStr[1])){
-					for(File confFile : file.listFiles()){
-						if(confFile.getName().equalsIgnoreCase("worldConf.json") && confFile.isFile()){
-							String worldConfStr = CommonLogic.loadJsonAsString(confFile);
-							BukkitWorld newWorld = gson.fromJson(worldConfStr, BukkitWorld.class);
-							worlds.createWorld(newWorld);
-							worlds.loadWorldToMemory(newWorld.getUUID());
-						}
+		//Gson gson = new Gson();
+		
+		/* TODO
+		 * Add a check to make sure all currently loaded worlds are in the plugins world list
+		 * before the below code is run
+		 */
+		
+		for(File file : Bukkit.getWorldContainer().listFiles()){
+			skipWorld:
+			if(isWorldFolder(file)){
+				Bukkit.getLogger().info("WorldManager: Found world " + file.getName());
+				if(autoLoadWorlds){
+					if(worldList.contains(file.getName())){ // If pending world is in list then skip loading it
+						Bukkit.getLogger().info("WorldManager: World is listed in config; Skipping world " + file.getName());
+						break skipWorld;
+					}
+					Bukkit.createWorld(new WorldCreator(file.getName()));
+				} else {
+					// Only load world if in worldList
+					if(worldList.contains(file.getName())){
+						Bukkit.getLogger().info("WorldManager: World is listed in config; Loading world " + file.getName());
+						Bukkit.createWorld(new WorldCreator(file.getName()));
+					}	
+				}	
+			}
+		}
+		
+
+		if(overrideDefaultWorlds){
+			for(World world : Bukkit.getWorlds()){
+				if(world != null){
+					Bukkit.getLogger().info("WorldManager: Unloading default world " + world.getName());
+					Bukkit.unloadWorld(world, true);
+				}
+			}
+		}
+		
+/*		if(file.isDirectory() && file.getName().contentEquals(conf)){
+			
+			if(!autoLoadWorlds){
+				for(File confFile : file.listFiles()){
+					if(confFile.getName().equalsIgnoreCase("level.dat") && confFile.isFile()){
+						String worldConfStr = CommonLogic.loadJsonAsString(confFile);
+						BukkitWorld newWorld = gson.fromJson(worldConfStr, BukkitWorld.class);
+						worlds.createWorld(newWorld);
+						worlds.loadWorldToMemory(newWorld.getUUID());
 					}
 				}
 			}
 		}
+		
+		for(String conf : worldList){
+
+		}*/
+		Bukkit.getLogger().info("WorldManager: Finished Loading Configuration");
 	}
 
 	public void saveWorldConfig(){
+		Bukkit.getLogger().info("WorldManager: Saving World Configuration");
 		ArrayList<String> worldUUID = new ArrayList<String>();
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		
+/*		for(File file : Bukkit.getWorldContainer().listFiles()){
+			if(isWorldFolder(file)){
+				World Bukkit.getWorld(file.getName());
+			}
+		}
 		
 		for(World world : Bukkit.getWorlds()){
-			worldUUID.add(world.getUID() + ":" + world.getName());
+			worldUUID.add(world.getName());
 			File worldFolder = world.getWorldFolder();
 			File worldConfFile = new File(worldFolder, "worldConf.json");
 			BukkitWorld worldConf = generateConfigForWorld(world);
 			CommonLogic.saveJsonAsFile(worldConfFile, gson.toJson(worldConf));
-		}
+		}*/
 		plugin.getConfig().set("world.worlds", worldUUID);
+		Bukkit.getLogger().info("WorldManager: Finished Saving Configuration");
  	}
 
 	public static BukkitWorld generateConfigForWorld(World world) {
@@ -98,6 +146,19 @@ public class WorldManager implements Listener, CommandExecutor {
 		for(String key : world.getGamerules().keySet()){
 			theWorld.setGameRuleValue(key, world.getGamerules().get(key));
 		}
+	}
+	
+	private boolean isWorldFolder(File theFile){
+		if(theFile != null){
+			if(theFile.isDirectory()){
+				for(File file : theFile.listFiles()){
+					if(file.getName().equalsIgnoreCase("level.dat")){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	// Command Parsing Logic

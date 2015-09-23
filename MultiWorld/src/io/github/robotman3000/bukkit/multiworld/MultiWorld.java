@@ -35,14 +35,12 @@ public class MultiWorld extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		// Reminder: Don't assume that this is only called on a server restart
-		Bukkit.getLogger().severe("Loaging...");
 		ConfigurationSerialization.registerClass(PlayerState.class);
 		ConfigurationSerialization.registerClass(BukkitInventory.class);
 		
 		saveDefaultConfig();
 		
-/*		
-		
+/*			
 		this.getConfig().get("multiworld.enableTeleportManagement");
 		this.getConfig().get("teleport.handleNetherPortals");
 		this.getConfig().get("teleport.handleEndPortals");
@@ -60,16 +58,19 @@ public class MultiWorld extends JavaPlugin implements Listener {
 		
 		// World Manager
 		if(this.getConfig().getBoolean("multiworld.enableWorldManagement")){
+			Bukkit.getLogger().info("Initializing World Manager");
 			for(String str : worlds.commands){ // Register Commands
+				Bukkit.getLogger().info("Registering World Manager Command: " + str);
 				this.getCommand(str).setExecutor(worlds);
 			}
+			Bukkit.getLogger().info("Registering World Manager Event Handlers");
 			getServer().getPluginManager().registerEvents(worlds, this); // Register the world event handlers
 			worlds.loadWorldConfig(); // Load the worlds list
 		}
 			
 		// Inventory Manager
 		if(this.getConfig().getBoolean("multiworld.enableInventoryManagement")){
-			Bukkit.getLogger().severe("Loaging...");
+			Bukkit.getLogger().info("Initializing Inventory Manager");
 			for(String str : inventories.commands){
 				this.getCommand(str).setExecutor(inventories);
 			}
