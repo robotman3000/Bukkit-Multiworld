@@ -1,19 +1,21 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class BukkitInventory {
+public class BukkitInventory implements ConfigurationSerializable {
 	private UUID inventoryId = UUID.randomUUID();
 	private boolean canFly = false;
-	private FixedLocation bedSpawnPoint = new FixedLocation(getAWorld().getSpawnLocation());
-	private FixedLocation compassTarget = new FixedLocation(getAWorld().getSpawnLocation());
+	private Location bedSpawnPoint;
+	private Location compassTarget;
 	private String displayName = "Steve";
 	private float exhaustion;
 	private float xpPoints = 0;
@@ -26,10 +28,10 @@ public class BukkitInventory {
 	private int remainingAir = 300;
 	private float foodSaturation;
 	private Vector velocity = new Vector();
-	private transient ItemStack[] armorContents = new ItemStack[0];
-	private transient ItemStack[] inventoryContents = new ItemStack[0];
-	private transient ItemStack[] enderChest = new ItemStack[0];
-	private FixedLocation playerLocation = new FixedLocation(getAWorld().getSpawnLocation());
+	private ItemStack[] armorContents = new ItemStack[0];
+	private ItemStack[] inventoryContents = new ItemStack[0];
+	private ItemStack[] enderChest = new ItemStack[0];
+	private Location playerLocation;
 	private PlayerState playerState;
 
 	/**
@@ -46,8 +48,13 @@ public class BukkitInventory {
 		this.configureForplayer(playerState.getPlayer());
 	}
 
+	protected BukkitInventory(PlayerState playerState, UUID uuid){
+		this.setPlayerState(playerState);
+		this.inventoryId = uuid;
+	}
+	
 	protected void setLocation(Location location) {
-		this.playerLocation = new FixedLocation(location);
+		this.playerLocation = location;
 	}
 
 	public UUID getInventoryId() {
@@ -59,11 +66,11 @@ public class BukkitInventory {
 	}
 
 	public Location getBedSpawnPoint() {
-		return bedSpawnPoint.getLocation();
+		return bedSpawnPoint;
 	}
 
 	public Location getCompassTarget() {
-		return compassTarget.getLocation();
+		return compassTarget;
 	}
 
 	public String getDisplayName() {
@@ -127,11 +134,11 @@ public class BukkitInventory {
 	}
 
 	protected void setBedSpawnPoint(Location bedSpawnPoint) {
-		this.bedSpawnPoint = new FixedLocation(bedSpawnPoint);
+		this.bedSpawnPoint = bedSpawnPoint;
 	}
 
 	protected void setCompassTarget(Location compassTarget) {
-		this.compassTarget = new FixedLocation(compassTarget);
+		this.compassTarget = compassTarget;
 	}
 
 	protected void setDisplayName(String displayName) {
@@ -199,7 +206,7 @@ public class BukkitInventory {
 	}
 	
 	public Location getLocation(){
-		return playerLocation.getLocation();	
+		return playerLocation;	
 	}
 	
 	@Override
@@ -211,10 +218,6 @@ public class BukkitInventory {
 			}
 		}
 		return false;
-	}
-	
-	private World getAWorld(){
-		return Bukkit.getServer().getWorlds().get(0);
 	}
 	
 	private void configureForplayer(Player player){
@@ -245,5 +248,76 @@ public class BukkitInventory {
 
 	private void setPlayerState(PlayerState playerState) {
 		this.playerState = playerState;
+	}
+
+	@Override
+	public Map<String, Object> serialize() {
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("inventoryId", inventoryId.toString());
+		map.put("canFly", canFly);
+		map.put("bedSpawnPoint", bedSpawnPoint);
+		map.put("compassTarget", compassTarget); 
+		map.put("displayName", displayName);
+		map.put("exhaustion", exhaustion);
+		map.put("xpPoints", xpPoints);
+		map.put("fallDistance", fallDistance);
+		map.put("fireTicks", fireTicks);
+		map.put("isFlying", isFlying);
+		map.put("foodLevel", foodLevel);
+		map.put("healthPoints", healthPoints);
+		map.put("xpLevel", xpLevel);
+		map.put("remainingAir", remainingAir);
+		map.put("foodSaturation", foodSaturation);
+		map.put("velocity", velocity);
+		map.put("armorContents", armorContents);
+		map.put("inventoryContents", inventoryContents);
+		map.put("enderChest", enderChest);
+		map.put("playerLocation", playerLocation);
+		map.put("playerKey", playerState);
+		return map;
+	}
+	
+	public static BukkitInventory deserialize(Map<String, Object> map){
+		BukkitInventory inv = new BukkitInventory();
+		inv.inventoryId = UUID.fromString(map.get("inventoryId").toString());
+		inv.canFly = (boolean) map.get("canFly");
+		inv.bedSpawnPoint = (Location) map.get("bedSpawnPoint");
+		inv.compassTarget = (Location) map.get("compassTarget"); 
+		inv.displayName = (String) map.get("displayName");
+		inv.exhaustion = Float.valueOf(map.get("exhaustion").toString());
+		inv.xpPoints = Float.valueOf(map.get("xpPoints").toString());
+		inv.fallDistance = Float.valueOf(map.get("fallDistance").toString());
+		inv.fireTicks = Integer.valueOf( map.get("fireTicks").toString());
+		inv.isFlying = (boolean) map.get("isFlying");
+		inv.foodLevel = Integer.valueOf( map.get("foodLevel").toString());
+		inv.healthPoints = (double) map.get("healthPoints");
+		inv.xpLevel = Integer.valueOf( map.get("xpLevel").toString());
+		inv.remainingAir = Integer.valueOf( map.get("remainingAir").toString());
+		inv.foodSaturation = Float.valueOf(map.get("foodSaturation").toString());
+		inv.velocity = (Vector) map.get("velocity");
+		inv.armorContents = toItemStackArray(map.get("armorContents"));
+		inv.inventoryContents = toItemStackArray(map.get("inventoryContents"));
+		inv.enderChest = toItemStackArray(map.get("enderChest"));
+		inv.playerLocation = (Location) map.get("playerLocation");
+		inv.playerState = (PlayerState) map.get("playerKey");
+		return inv;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ItemStack[] toItemStackArray(Object object) {
+		ArrayList<ItemStack> items = new ArrayList<>();
+		
+		if(object instanceof ArrayList<?>){
+			ArrayList<Object> list = (ArrayList<Object>) object;
+			for(Object item : list){
+				if(item instanceof ItemStack){
+					items.add((ItemStack) item);
+				} else {
+					items.add(null);
+				}
+			}
+			return items.toArray(new ItemStack[0]);
+		}
+		return new ItemStack[0];
 	}
 }

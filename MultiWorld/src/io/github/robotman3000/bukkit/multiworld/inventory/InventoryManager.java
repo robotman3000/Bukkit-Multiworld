@@ -4,6 +4,7 @@ import io.github.robotman3000.bukkit.multiworld.CommonLogic;
 import io.github.robotman3000.bukkit.multiworld.MultiWorld;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,13 +28,10 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 public class InventoryManager implements CommandExecutor, Listener {
 	//TODO: make this private
 	
-	public final String[] commands = {"increate", "inlist", "inset", "ininfo"};
+	public final String[] commands = {/*"increate",*/ "inlist"/*, "inset", "ininfo"*/};
 	private BukkitInventories invs = new BukkitInventories();
 	private final MultiWorld plugin;
 	
@@ -50,15 +49,24 @@ public class InventoryManager implements CommandExecutor, Listener {
 
 	public void loadInventoryConfig() {	
 		// Load the inventories
-		Gson gson = new Gson();
+		//Gson gson = new GsonBuilder().registerTypeAdapter(BukkitInventory.class, new BukkitInventorySerializer()).create();
 		for(File file : plugin.getDataFolder().listFiles()){
 			if(file.isDirectory() && file.getName().contentEquals("inventories")){
 				for(File confFile : file.listFiles()){
 					if(confFile.getName().contains("playerInv-") && confFile.isFile()){
-						String invConfStr = CommonLogic.loadJsonAsString(confFile);
-						BukkitInventory newInv = gson.fromJson(invConfStr, BukkitInventory.class);
+						YamlConfiguration yaml = YamlConfiguration.loadConfiguration(confFile);
+						BukkitInventory newInv = (BukkitInventory) yaml.get("player.inv");
+						//String invConfStr = CommonLogic.loadJsonAsString(confFile);
+						//BukkitInventory newInv = gson.fromJson(invConfStr, BukkitInventory.class);
 						invs.createInventory(newInv);
 					}
+				}
+				try { // This is a quick and dirty fix for duplicate inventory files on disk
+					// we delete them after they have been moved into memory
+					CommonLogic.dirDelete(file);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
@@ -108,12 +116,19 @@ public class InventoryManager implements CommandExecutor, Listener {
 
 	public void saveInventoryConfig() {
 		// Save the inventory data
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		for(BukkitInventory inv : invs.getInventories()){
 			File invDataFolder = new File(plugin.getDataFolder(), "inventories");
 			invDataFolder.mkdirs();
-			File invConfFile = new File(invDataFolder, "playerInv-" + inv.getInventoryId() + ".json");
-			CommonLogic.saveJsonAsFile(invConfFile, gson.toJson(inv));
+			File invConfFile = new File(invDataFolder, "playerInv-" + inv.getInventoryId() + ".yml");
+			YamlConfiguration yaml = new YamlConfiguration();
+			yaml.set("player.inv", inv);
+			try {
+				yaml.save(invConfFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//CommonLogic.saveJsonAsFile(invConfFile, gson.toJson(inv));
 		}
 		
 		// Save the world groups and gamemode settings
@@ -310,8 +325,7 @@ public class InventoryManager implements CommandExecutor, Listener {
 			sender.sendMessage(ChatColor.GOLD + "There are no Unregistered inventories");
 		} else {
 			for(BukkitInventory inv : invs.getInventories()){
-				sender.sendMessage("Unregistered Inv: " + ChatColor.BLUE + inv.getDisplayName() + " " + ChatColor.GREEN + inv.getPlayerState().getWorld().getName() + " " + ChatColor.YELLOW + inv.getPlayerState().getGamemode());
-
+				sender.sendMessage("Unregistered Inv: " + ChatColor.BLUE + inv.getPlayerState().getPlayer().getDisplayName() + " " + ChatColor.GREEN + inv.getPlayerState().getWorld().getName() + " " + ChatColor.YELLOW + inv.getPlayerState().getGamemode() + " " + ChatColor.WHITE + inv.getInventoryId());
 			}
 		}
 		

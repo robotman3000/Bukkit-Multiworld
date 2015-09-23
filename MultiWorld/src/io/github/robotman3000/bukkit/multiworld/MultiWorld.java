@@ -1,6 +1,8 @@
 package io.github.robotman3000.bukkit.multiworld;
 
+import io.github.robotman3000.bukkit.multiworld.inventory.BukkitInventory;
 import io.github.robotman3000.bukkit.multiworld.inventory.InventoryManager;
+import io.github.robotman3000.bukkit.multiworld.inventory.PlayerState;
 import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
 
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,6 +35,10 @@ public class MultiWorld extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		// Reminder: Don't assume that this is only called on a server restart
+		Bukkit.getLogger().severe("Loaging...");
+		ConfigurationSerialization.registerClass(PlayerState.class);
+		ConfigurationSerialization.registerClass(BukkitInventory.class);
+		
 		saveDefaultConfig();
 		
 /*		
@@ -45,7 +52,6 @@ public class MultiWorld extends JavaPlugin implements Listener {
 		// Base Plugin
 		getServer().getPluginManager().registerEvents(this, this);
 		appendWorldInChat = this.getConfig().getBoolean("multiworld.appendWorldInChat");
-		
 		
 /*		// Override the world in server.properties
 		if(this.getConfig().getBoolean("multiworld.overrideDefaultWorld")){
@@ -63,6 +69,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
 			
 		// Inventory Manager
 		if(this.getConfig().getBoolean("multiworld.enableInventoryManagement")){
+			Bukkit.getLogger().severe("Loaging...");
 			for(String str : inventories.commands){
 				this.getCommand(str).setExecutor(inventories);
 			}
@@ -176,11 +183,16 @@ public class MultiWorld extends JavaPlugin implements Listener {
 			sender.sendMessage("Teleporting you to world " + args[0]);
 			Location loc = world.getSpawnLocation();
 			sender.sendMessage("Activating Teleport");
-			if (!(sender instanceof Player)) {
+			if (!(sender instanceof Player) && args.length < 2) {
 				sender.sendMessage("Error; You must be a player to teleport");
 				return false;
 			}
-			Player thePlayer = (Player) sender;
+			Player thePlayer;
+			if(args.length > 1){
+				thePlayer = Bukkit.getPlayer(args[1]);
+			} else {
+				thePlayer = (Player) sender;
+			}
 			thePlayer.teleport(loc);
 			return true;
 		}
