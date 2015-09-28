@@ -50,12 +50,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
 		// Base Plugin
 		getServer().getPluginManager().registerEvents(this, this);
 		appendWorldInChat = this.getConfig().getBoolean("multiworld.appendWorldInChat");
-		
-/*		// Override the world in server.properties
-		if(this.getConfig().getBoolean("multiworld.overrideDefaultWorld")){
-			
-		}*/
-		
+
 		// World Manager
 		if(this.getConfig().getBoolean("multiworld.enableWorldManagement")){
 			Bukkit.getLogger().info("Initializing World Manager");
@@ -63,6 +58,9 @@ public class MultiWorld extends JavaPlugin implements Listener {
 				Bukkit.getLogger().info("Registering World Manager Command: " + str);
 				this.getCommand(str).setExecutor(worlds);
 			}
+			
+			worlds.autoLoadWorlds = this.getConfig().getBoolean("world.autoLoadWorlds");
+			
 			Bukkit.getLogger().info("Registering World Manager Event Handlers");
 			getServer().getPluginManager().registerEvents(worlds, this); // Register the world event handlers
 			worlds.loadWorldConfig(); // Load the worlds list
@@ -72,15 +70,16 @@ public class MultiWorld extends JavaPlugin implements Listener {
 		if(this.getConfig().getBoolean("multiworld.enableInventoryManagement")){
 			Bukkit.getLogger().info("Initializing Inventory Manager");
 			for(String str : inventories.commands){
+				Bukkit.getLogger().info("Registering Inventory Manager Command: " + str);
 				this.getCommand(str).setExecutor(inventories);
 			}
 			
-			inventories.seperateWorldInventories = this.getConfig().getBoolean("inventory.seperateWorldInventories");
 			//this.getConfig().get("inventories.multiplexPlayerInventories");
 			inventories.teleportOnSwich = this.getConfig().getBoolean("inventory.teleportOnSwitch");
 			inventories.seperateGamemodeInventories = this.getConfig().getBoolean("inventory.seperateGamemodeInventories");
 			inventories.forceGamemode = this.getConfig().getBoolean("inventory.forceGamemode");
 			
+			Bukkit.getLogger().info("Registering Inventory Manager Event Handlers");
 			getServer().getPluginManager().registerEvents(inventories, this); // Register the inventory event handlers
 			inventories.loadInventoryConfig(); // Load the worlds list
 		}

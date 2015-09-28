@@ -4,7 +4,6 @@ import io.github.robotman3000.bukkit.multiworld.CommonLogic;
 import io.github.robotman3000.bukkit.multiworld.MultiWorld;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -20,7 +19,6 @@ import org.bukkit.event.Listener;
 public class WorldManager implements Listener, CommandExecutor {
 
 	public final String[] commands = {"mwcreate", /*"mwdelete",*/ "mwload", "mwunload", "mwinfo", "mwlist"/*, "mwgamerule"*/};
-	private BukkitWorlds worlds = new BukkitWorlds();
 	private final MultiWorld plugin;
 	
 	public boolean autoLoadWorlds;
@@ -60,16 +58,6 @@ public class WorldManager implements Listener, CommandExecutor {
 			}
 		}
 		
-
-		if(overrideDefaultWorlds){
-			for(World world : Bukkit.getWorlds()){
-				if(world != null){
-					Bukkit.getLogger().info("WorldManager: Unloading default world " + world.getName());
-					Bukkit.unloadWorld(world, true);
-				}
-			}
-		}
-		
 /*		if(file.isDirectory() && file.getName().contentEquals(conf)){
 			
 			if(!autoLoadWorlds){
@@ -92,7 +80,7 @@ public class WorldManager implements Listener, CommandExecutor {
 
 	public void saveWorldConfig(){
 		Bukkit.getLogger().info("WorldManager: Saving World Configuration");
-		ArrayList<String> worldUUID = new ArrayList<String>();
+		//ArrayList<String> worldUUID = new ArrayList<String>();
 		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 /*		for(File file : Bukkit.getWorldContainer().listFiles()){
@@ -108,7 +96,7 @@ public class WorldManager implements Listener, CommandExecutor {
 			BukkitWorld worldConf = generateConfigForWorld(world);
 			CommonLogic.saveJsonAsFile(worldConfFile, gson.toJson(worldConf));
 		}*/
-		plugin.getConfig().set("world.worlds", worldUUID);
+		//plugin.getConfig().set("world.worlds", worldUUID);
 		Bukkit.getLogger().info("WorldManager: Finished Saving Configuration");
  	}
 
@@ -278,23 +266,19 @@ public class WorldManager implements Listener, CommandExecutor {
 		World world = Bukkit.getWorld(args[0]);
 		if(world != null){
 			sender.sendMessage("Unloading world " + args[0]);
-			boolean var = worlds.unloadWorldFromMemory(world.getUID(), true);
-			sender.sendMessage("Unloaded world");
+			boolean var = Bukkit.unloadWorld(args[0], true);
+			if(var){
+				sender.sendMessage("Unloaded world");
+			} else {
+				sender.sendMessage("Failed to unload world");
+			}
 			return var;			
 		}
 		return false;
 	}
 	
 	private boolean loadWorldCommand(CommandSender sender, Command cmd, String label, String[] args){
-		if(args.length < 1){
-			if(sender instanceof Player){
-				Player player = (Player) sender;
-				return worlds.loadWorldToMemory(player.getWorld().getUID());
-			}
-			// If we get here we must be running from a console without a world name
-			return false;
-		}
-		return worlds.loadWorldToMemory(worlds.doesWorldNameExist(args[0]));
+		return createCommand(sender, cmd, label, args);
 	}
 
 	private boolean createCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -333,12 +317,11 @@ public class WorldManager implements Listener, CommandExecutor {
 				//TODO: Implement this
 			}
 		}
-		if(worlds.createWorld(conf)){
+		if(Bukkit.createWorld(conf.getWorldCreator()) != null){
 			sender.sendMessage("Done with world creation");
 			return true;
 		}
 		return false;
-		
 	}
 	
 	private boolean worldListCommand(CommandSender sender, Command cmd, String label, String[] args) {
