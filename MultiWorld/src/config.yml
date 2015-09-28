@@ -1,0 +1,36 @@
+multiworld:
+  # Append the name of the world the player is in to his message
+  appendWorldInChat: true
+  # Should the world manager be enabled
+  enableWorldManagement: true
+  # Should the inventory manager be enabled
+  enableInventoryManagement: true
+  
+# If world manager is disabled these have no affect  
+world:
+  # If true then the plugin will automatically load every world it finds
+  # unless it is listed below
+  # If false then the plugin will only load the listed worlds
+  autoLoadWorlds: true
+  worlds:
+  - testb
+  
+# If inventory manager is disabled these have no affect  
+inventory:
+  # Should the inventories for each gamemode be seperated
+  seperateGamemodeInventories: true
+  # Not Implemented!! Should the player be teleported to the last location the inventory
+  # he is being swiched to was last used
+  teleportOnSwitch: false
+  # Should the gamemode assigned to the world's group be forced on a player when he changes worlds
+  forceGamemode: false
+  groups:
+    default:
+      gamemode: CREATIVE
+      worlds:
+      - world_the_end
+      - world_nether
+    group2:
+      gamemode: SURVIVAL
+      worlds:
+      - world
