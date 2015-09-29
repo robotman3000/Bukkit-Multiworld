@@ -97,4 +97,12 @@ public class PlayerState implements ConfigurationSerializable {
 		ps.setIDs(UUID.fromString(map.get("player").toString()), UUID.fromString(map.get("world").toString()));
 		return ps;
 	}
+
+	public InventoryKey toInventoryKey() {
+		// TODO: Note that we must return the worlds group and not the world name itself unless the world is not part of a group
+		return new InventoryKey(player.getUniqueId().toString(), 
+								world.getName(), 
+								gamemode.toString(), 
+								BukkitInventory.getInventoryForplayer(player));
+	}
 }
