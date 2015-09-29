@@ -1,108 +1,157 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
+import io.github.robotman3000.bukkit.multiworld.MultiWorld;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.UUID;
 
+import net.md_5.bungee.api.ChatColor;
+
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 public class BukkitInventories {
-	private HashSet<BukkitInventory> unregisteredInventories = new HashSet<>();
-	private HashSet<PlayerState> registeredInventories = new HashSet<>();
 	
-	protected Set<BukkitInventory> getInventories(){
-		return unregisteredInventories;
+	public enum InventoryResult{
+		INVENTORY_REGISTERED,
+		INVENTORY_UNREGISTERED,
+		INVENTORY_CREATED,
+		FAILED,
 	}
+	// TODO: use the group name as part of the key instead of the world name
+	private HashSet<InventoryKey> unregisteredInventories = new HashSet<>();
+	private HashSet<InventoryKey> registeredInventories = new HashSet<>();
 	
-	protected HashSet<PlayerState> getRegisteredInventories() {
-		return registeredInventories;
-	}
-	
-	protected boolean createInventory(BukkitInventory inv){
-		if(inv != null){
-			return unregisteredInventories.add(inv);
-		}
-		return false;
-	}
-	
-	protected boolean registerInventory(PlayerState beforeState, PlayerState afterState, UUID invID){
-		Bukkit.getLogger().warning("Inv Maps Before Reg:");
-		Bukkit.getLogger().warning("Reg: " + registeredInventories);
-		Bukkit.getLogger().warning("UnReg: " + unregisteredInventories);
-		Iterator<BukkitInventory> it = unregisteredInventories.iterator(); // Iterate over all aval invs
-		while(it.hasNext()){
-			BukkitInventory inv = it.next();
-			if(inv.getInventoryId().equals(invID)){ // If its not the one we want then move on else do the task
-				boolean var = registeredInventories.add(afterState); // Add the inventory to the registered list
-				it.remove(); // Remove it from the unregistered list
-				BukkitInventories.zeroPlayerInventory(afterState.getPlayer()); // Clear our slate
-				updatePlayerInventory(afterState.getPlayer(), inv); // Give the player his new inventory
-				Bukkit.getLogger().warning("Inv Maps After Reg:");
-				Bukkit.getLogger().warning("Reg: " + registeredInventories);
-				Bukkit.getLogger().warning("UnReg: " + unregisteredInventories);
-				return var;
+	protected InventoryResult registerInventory(InventoryKey beforeState, InventoryKey afterState, Player player){
+		for(InventoryKey key : unregisteredInventories){
+			//Bukkit.getLogger().warning("Key: " + key.toString());
+			//Bukkit.getLogger().warning("Old: " + afterState.toString());
+			if(key.equals(afterState)){
+				//Bukkit.getLogger().warning(ChatColor.GREEN + "TRUE");
+				//Bukkit.getLogger().warning("****************************************************************************");
+				boolean var1 = unregisteredInventories.remove(key);
+				updatePlayerInventory(player, key.getInventory());
+				boolean var2 = registeredInventories.add(key);
+				return ( (var1 && var2) ? InventoryResult.INVENTORY_REGISTERED : InventoryResult.FAILED);
 			}
+			//Bukkit.getLogger().warning(ChatColor.RED + "FALSE");
+			//Bukkit.getLogger().warning("****************************************************************************");
 		}
-		return false; // We failed
+		return InventoryResult.FAILED;
 	}
 	
-	protected boolean unregisterInventory(PlayerState beforeState, PlayerState afterState){
-		Bukkit.getLogger().warning("Inv Maps Before UnReg:");
-		Bukkit.getLogger().warning("Reg: " + registeredInventories);
-		Bukkit.getLogger().warning("UnReg: " + unregisteredInventories);
-		Iterator<PlayerState> it = registeredInventories.iterator();
-		while(it.hasNext()){
-			PlayerState rInv = it.next();
-			if(rInv.getPlayer().getUniqueId().equals(beforeState.getPlayer().getUniqueId())){
-				if(rInv.getWorld().getUID().equals(beforeState.getWorld().getUID())){
-					if(rInv.getGamemode().equals(beforeState.getGamemode())){
-						it.remove();
-						BukkitInventory inv = new BukkitInventory(beforeState);
-						BukkitInventories.zeroPlayerInventory(afterState.getPlayer());
-						boolean var = unregisteredInventories.add(inv);
-						Bukkit.getLogger().warning("Inv Maps After UnReg:");
-						Bukkit.getLogger().warning("Reg: " + registeredInventories);
-						Bukkit.getLogger().warning("UnReg: " + unregisteredInventories);
-						return var;
+	protected InventoryResult unregisterInventory(InventoryKey beforeState, InventoryKey afterState, Player player){
+		for(InventoryKey key : registeredInventories){
+			Bukkit.getLogger().warning("UKey: " + key.toString());
+			Bukkit.getLogger().warning("UOld: " + beforeState.toString());
+			if(key.equals(beforeState)){
+				Bukkit.getLogger().warning(ChatColor.GREEN + "TRUE");
+				Bukkit.getLogger().warning("****************************************************************************");
+				boolean var1 = registeredInventories.remove(key);
+				updateInventoryContents(player, key.getInventory());
+				zeroPlayerInventory(player);
+				boolean var2 = unregisteredInventories.add(key);
+				Bukkit.getLogger().warning("Var1: " + var1);
+				Bukkit.getLogger().warning("Var2: " + var2);
+				return ( (var1 && var2) ? InventoryResult.INVENTORY_REGISTERED : InventoryResult.FAILED);
+			}
+			Bukkit.getLogger().warning(ChatColor.RED + "FALSE");
+			Bukkit.getLogger().warning("****************************************************************************");
+		}
+		return InventoryResult.FAILED;
+	}
+	
+	protected void readInventoryConfig(MultiWorld plugin){
+		File inventoryFolder = new File(plugin.getDataFolder(), "inventories");
+		inventoryFolder.mkdirs();
+
+		for(File confFile : inventoryFolder.listFiles()){
+			if(confFile.getName().contains("playerInv-") && confFile.isFile()){
+				YamlConfiguration yaml = YamlConfiguration.loadConfiguration(confFile);
+				// Load the inventory keys
+				String invKeyPath = "invKey";
+				if(!yaml.contains(invKeyPath)){
+					yaml.createSection(invKeyPath);
+				}
+				ConfigurationSection invKeysSection = yaml.getConfigurationSection(invKeyPath);
+				for(String playerKey : invKeysSection.getKeys(false)){
+					String playerKeyPath = invKeyPath + "." + playerKey;
+					ConfigurationSection playerKeysSection = yaml.getConfigurationSection(playerKeyPath);
+					for(String worldKey : playerKeysSection.getKeys(false)){
+						String worldKeyPath = playerKeyPath + "." + worldKey;
+						ConfigurationSection worldKeysSection = yaml.getConfigurationSection(worldKeyPath);
+						for(String gamemodeKey : worldKeysSection.getKeys(false)){
+							String gamemodeKeyPath =  worldKeyPath + "." + gamemodeKey;
+							ConfigurationSection gamemodeConfSection = yaml.getConfigurationSection(gamemodeKeyPath);
+							
+							BukkitInventory theInv = (BukkitInventory) gamemodeConfSection.get("inventory");
+							InventoryKey invKey = new InventoryKey(playerKey, worldKey, gamemodeKey, theInv);
+							unregisteredInventories.add(invKey);
+						}
 					}
 				}
 			}
 		}
-		return false;
 	}
 	
-/*	public static void updateInventoryContents(PlayerState playerState, UnRegisteredInventory inv) {
-		inv.setCanFly(playerState.getPlayer().getAllowFlight());
-		inv.setBedSpawnPoint(playerState.getPlayer().getBedSpawnLocation());
-		inv.setCompassTarget(playerState.getPlayer().getCompassTarget());
-		inv.setDisplayName(playerState.getPlayer().getDisplayName());
-		inv.setExhaustion(playerState.getPlayer().getExhaustion());
-		inv.setXpPoints(playerState.getPlayer().getExp());
-		inv.setFallDistance(playerState.getPlayer().getFallDistance());
-		inv.setFireTicks(playerState.getPlayer().getFireTicks());
-		inv.setFlying(playerState.getPlayer().isFlying());
-		inv.setFoodLevel(playerState.getPlayer().getFoodLevel());
-		inv.setHealthPoints(playerState.getPlayer().getHealth());
-		inv.setXpLevel(playerState.getPlayer().getLevel());
-		inv.setRemainingAir(playerState.getPlayer().getRemainingAir());
-		inv.setFoodSaturation(playerState.getPlayer().getSaturation());
-		inv.setVelocity(playerState.getPlayer().getVelocity());
-		inv.setArmorContents(playerState.getPlayer().getInventory().getArmorContents());
-		inv.setInventoryContents(playerState.getPlayer().getInventory().getContents());
-		inv.setEnderChest(playerState.getPlayer().getEnderChest().getContents());
-		inv.setLocation(playerState.getPlayer().getLocation());
-	}*/
-	
-	private static void zeroPlayerInventory(Player player) {
-		// TODO: Finish adding all the things that need to be cleared
-		player.getActivePotionEffects().clear();
-		player.getEnderChest().clear();
-		player.getEquipment().clear();
-		player.getInventory().clear();
+	protected void saveInventoryConfig(MultiWorld plugin){
+		
+		// Save the inventory keys
+		String invKeyPath = "invKey";
+		File invDataFolder = new File(plugin.getDataFolder(), "inventories");
+		invDataFolder.mkdirs();
+		for(InventoryKey key : unregisteredInventories){
+			String sectionPath = invKeyPath + "." + key.getPlayerKey().toString() + "." + key.getWorldKey() + "." + key.getGamemodeKey();
+			
+			// Save the inventory data
+			File invConfFile = new File(invDataFolder, "playerInv-" + key.getPlayerKey().toString() + ".yml");
+			YamlConfiguration yaml = new YamlConfiguration();
+			try {
+				if(invConfFile.exists()){
+					yaml.load(invConfFile);
+				}
+				yaml.set(sectionPath + ".inventory", key.getInventory());
+				yaml.save(invConfFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+				Bukkit.getLogger().severe("InventoryManager: Failed to save an inventory to disk, the inventory has been lost!!");
+				Bukkit.getLogger().severe("InventoryManager: The player id of the inventory was: " + key.getPlayerKey());
+			} catch (InvalidConfigurationException e) {
+				e.printStackTrace();
+			}
+		}
+		
 	}
-
+	
+	public static void updateInventoryContents(Player player, BukkitInventory inv) {
+		inv.setCanFly(player.getAllowFlight());
+		inv.setBedSpawnPoint(player.getBedSpawnLocation());
+		inv.setCompassTarget(player.getCompassTarget());
+		inv.setDisplayName(player.getDisplayName());
+		inv.setExhaustion(player.getExhaustion());
+		inv.setXpPoints(player.getExp());
+		inv.setFallDistance(player.getFallDistance());
+		inv.setFireTicks(player.getFireTicks());
+		inv.setFlying(player.isFlying());
+		inv.setFoodLevel(player.getFoodLevel());
+		inv.setHealthPoints(player.getHealth());
+		inv.setXpLevel(player.getLevel());
+		inv.setRemainingAir(player.getRemainingAir());
+		inv.setFoodSaturation(player.getSaturation());
+		inv.setVelocity(player.getVelocity());
+		inv.setArmorContents(player.getInventory().getArmorContents());
+		inv.setInventoryContents(player.getInventory().getContents());
+		inv.setEnderChest(player.getEnderChest().getContents());
+		inv.setLocation(player.getLocation());
+	}
+	
 	public static void updatePlayerInventory(Player player, BukkitInventory inventory){
 		player.setAllowFlight(inventory.canFly());
 		player.setBedSpawnLocation(inventory.getBedSpawnPoint());
@@ -125,16 +174,99 @@ public class BukkitInventories {
 		//player.teleport(inventory.getLocation());
 	}
 	
-	public UUID queryAvalInventories(PlayerState playerState){
-		for(BukkitInventory inv : unregisteredInventories){
-			if(inv.getPlayerState().equals(playerState)){
-				return inv.getInventoryId();
-			}
-		}
-		return null;
+	private static void zeroPlayerInventory(Player player) {
+		// TODO: Finish adding all the things that need to be cleared
+		player.getActivePotionEffects().clear();
+		player.getEnderChest().clear();
+		player.getEquipment().clear();
+		player.getInventory().clear();
 	}
 
-	public static BukkitInventory generateBlankConfig(PlayerState playerState) {
-		return new BukkitInventory(playerState);
+	private String showPlayerName(UUID playerKey) {
+		Player player = Bukkit.getPlayer(playerKey);
+		if(player == null){
+			return playerKey.toString();
+		}
+		return player.getName();
+	}
+	
+	protected boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if(unregisteredInventories.size() == 0){
+			sender.sendMessage(ChatColor.GOLD + "There are no Unregistered inventories");
+		} else {
+			for(InventoryKey key : unregisteredInventories){
+				BukkitInventory inv = key.getInventory();
+				if(inv != null){
+					sender.sendMessage("Unregistered Inv: " + ChatColor.BLUE + showPlayerName(key.getPlayerKey()) + " " + ChatColor.GREEN + key.getWorldKey() + " " + ChatColor.YELLOW + key.getGamemodeKey().toString() + " " + ChatColor.WHITE + inv.getInventoryId());
+				}
+			}
+		}
+		
+		if(registeredInventories.size() == 0){
+			sender.sendMessage(ChatColor.GOLD + "There are no Registered inventories");
+		} else {
+			for(InventoryKey key : registeredInventories){
+				BukkitInventory inv = key.getInventory();
+				if(inv != null){
+					sender.sendMessage("Registered Inv: " + ChatColor.BLUE + showPlayerName(key.getPlayerKey()) + " " + ChatColor.GREEN + key.getWorldKey() + " " + ChatColor.YELLOW + key.getGamemodeKey().toString() + " " + ChatColor.WHITE + inv.getInventoryId());
+				}
+			}
+		}
+		return true;
+	}
+
+	public void checkInventoryForEvent(InventoryKey playerState, Player player) {
+		String inventoryErrorMessage = "InventoryManager: You have been kicked to protect your inventory from errors; The errors have been fixed so you may now reconnect";
+		// This method is the error checker
+		// If the inventory sets are in an inconsistent state this method
+		// fixes the errors
+		
+		// Is this redundant with the next safety check?
+/*		for(InventoryKey key : registeredInventories){
+			// If the inventory we want is in here then we kick him and reset
+			// because a player should never try to register the same inventory twice
+			if(key.playerStateMatches(beforeState)){
+				// This means his old inventory is still registered which
+				// would cause an invalid state if his new inventory is also registered
+				
+				// The player getting kicked will trigger an event which will unregister the offending inventory and fix the error
+				beforeState.getPlayer().kickPlayer(inventoryErrorMessage);
+			}
+		}*/
+		
+		// Now we check if the player has more than one inventory already registered
+		HashSet<InventoryKey> invCounter = new HashSet<>();
+		for(InventoryKey key : registeredInventories){
+			if(key.getPlayerKey().equals(player.getUniqueId())){
+				// Add all inventories that belong to this player to our list
+				invCounter.add(key);
+			}
+		}
+		if(invCounter.size() > 1){
+			// If there is more than one inventory then there is an error that needs fixed
+			player.kickPlayer(inventoryErrorMessage);
+			for(InventoryKey key : invCounter){
+				// After kicking the player we unregister every inventory that belongs to him
+				registeredInventories.remove(key);
+				unregisteredInventories.add(key);
+			}
+		}
+		
+		// Check if the new inventory exists and if not fix it
+		boolean keyMatched = false;
+		for(InventoryKey key : unregisteredInventories){
+			// We cycle through all the available inventories
+			if(key.equals(playerState)){
+				// if the current inventory matches then it is all systems go
+				keyMatched = true;
+			}
+		}
+		if(!keyMatched){
+			// If the inventory key we want doesn't exist then we create a new blank inventory for that key
+			unregisteredInventories.add(new InventoryKey(playerState.getPlayerKey().toString(),
+														 playerState.getWorldKey(),
+														 playerState.getGamemodeKey().toString(),
+														 new BukkitInventory()));
+		}
 	}
 }

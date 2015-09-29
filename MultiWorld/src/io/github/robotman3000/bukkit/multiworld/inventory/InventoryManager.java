@@ -1,15 +1,13 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
-import io.github.robotman3000.bukkit.multiworld.CommonLogic;
 import io.github.robotman3000.bukkit.multiworld.MultiWorld;
+import io.github.robotman3000.bukkit.multiworld.inventory.BukkitInventories.InventoryResult;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -19,7 +17,6 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,75 +25,27 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+//TODO: Add logging
 public class InventoryManager implements CommandExecutor, Listener {
 	//TODO: make this private
-	
-	public final String[] commands = {/*"increate",*/ "inlist"/*, "inset", "ininfo"*/};
+	public final String[] commands = {"inlist"};
 	private BukkitInventories invs = new BukkitInventories();
 	private final MultiWorld plugin;
 	
 	private Map<String, WorldGroup> worldGroups = new HashMap<>();
 
-	public boolean seperateWorldInventories;
-	public boolean teleportOnSwich;
 	public boolean seperateGamemodeInventories;
+	public boolean teleportOnSwich; // TODO: Add this feature; Implement it the same way as forceGamemode is done
 	public boolean forceGamemode;
-	
 	
 	public InventoryManager(MultiWorld multiWorld) {
 		this.plugin = multiWorld;
 	}
 
-	public void loadInventoryConfig() {	
-		// Load the inventories
-		//Gson gson = new GsonBuilder().registerTypeAdapter(BukkitInventory.class, new BukkitInventorySerializer()).create();
-		for(File file : plugin.getDataFolder().listFiles()){
-			if(file.isDirectory() && file.getName().contentEquals("inventories")){
-				for(File confFile : file.listFiles()){
-					if(confFile.getName().contains("playerInv-") && confFile.isFile()){
-						YamlConfiguration yaml = YamlConfiguration.loadConfiguration(confFile);
-						BukkitInventory newInv = (BukkitInventory) yaml.get("player.inv");
-						//String invConfStr = CommonLogic.loadJsonAsString(confFile);
-						//BukkitInventory newInv = gson.fromJson(invConfStr, BukkitInventory.class);
-						invs.createInventory(newInv);
-					}
-				}
-				try { // This is a quick and dirty fix for duplicate inventory files on disk
-					// we delete them after they have been moved into memory
-					CommonLogic.dirDelete(file);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+	public void loadInventoryConfig() {
+		invs.readInventoryConfig(plugin);
 		
-/*		// Load the world groups and gamemode settings
-		List<String> groupList = plugin.getConfig().getStringList("inventory.groups");
-		Bukkit.getLogger().warning("List Length: " + groupList.size());
-		for(String str : groupList){
-			
-			Bukkit.getLogger().warning("Inv Group " + str);
-			
-			List<String> groupConf = plugin.getConfig().getStringList(str);
-			GameMode gamemode = Bukkit.getDefaultGameMode();
-			String groupName = "default";
-			ArrayList<UUID> groupWorlds = new ArrayList<>();
-			for(String grStr : groupConf){
-				String[] worldStrArray = grStr.split(":");
-				if(worldStrArray[0].equalsIgnoreCase("gamemode")){
-					gamemode = GameMode.valueOf(worldStrArray[1]);
-				} else {
-					World world = Bukkit.getWorld(worldStrArray[0]);
-					if(world != null){
-						groupWorlds.add(world.getUID());
-					}
-				}
-			}
-			gameModes.put(groupName, gamemode);
-			worldGroups.put(groupName, groupWorlds);
-		}*/
-		
+		// Load the world groups
 		Set<String> groupKeys = plugin.getConfig().getConfigurationSection("inventory.groups").getKeys(false);
 		for(String groupKey : groupKeys){
 			String path = "inventory.groups." + groupKey;
@@ -115,106 +64,71 @@ public class InventoryManager implements CommandExecutor, Listener {
 	}
 
 	public void saveInventoryConfig() {
-		// Save the inventory data
-		for(BukkitInventory inv : invs.getInventories()){
-			File invDataFolder = new File(plugin.getDataFolder(), "inventories");
-			invDataFolder.mkdirs();
-			File invConfFile = new File(invDataFolder, "playerInv-" + inv.getInventoryId() + ".yml");
-			YamlConfiguration yaml = new YamlConfiguration();
-			yaml.set("player.inv", inv);
-			try {
-				yaml.save(invConfFile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			//CommonLogic.saveJsonAsFile(invConfFile, gson.toJson(inv));
-		}
+		invs.saveInventoryConfig(plugin);
 		
 		// Save the world groups and gamemode settings
-		
+		HashSet<String> knownWorlds = new HashSet<>();
+		//HashSet<String> unconfiguredWorlds = new HashSet<>();
 		for(String groupkey : worldGroups.keySet()){
 			String path = "inventory.groups." + groupkey;
 			WorldGroup group = worldGroups.get(groupkey);
-			
 			plugin.getConfig().createSection(path);
 			plugin.getConfig().set(path + ".gamemode", group.getGamemode().toString());
 			plugin.getConfig().set(path + ".worlds", group.getWorlds());
-		}
-		
-/*		ArrayList<String> worldList = new ArrayList<String>();
-		HashMap<String, List<String>> groups = new HashMap<>();
-		
-		for(String groupStr : worldGroups.keySet()){
-			boolean gamemodeSet = false;
-			List<UUID> groupWorlds = worldGroups.get(groupStr);
-			ArrayList<String> groupWorldString = new ArrayList<String>();
-			if(groupWorlds != null){
-				for(UUID uid : groupWorlds){
-					World world = Bukkit.getWorld(uid);
-					if(world != null){
-						groupWorldString.add(world.getName());
-						worldList.add(world.getName());
-					}
-				}
-				if(gamemodeSet == false){
-					groupWorldString.add("gamemode:" + gameModes.get(groupStr));
-					gamemodeSet = true;
-				}
-			}
-			groups.put(groupStr, groupWorldString);
-			Bukkit.getLogger().warning("Added to Groups: " + groupStr);
-		}
-		
-		if(worldList.size() > 0 || groups.size() == 0){
-			List<String> theSet = groups.get("default");
-			if(theSet == null){
-				groups.put("default", new ArrayList<String>() );
-			}
-			theSet = groups.get("default");
 			
-			for(World world : Bukkit.getWorlds()){
-				if(!worldList.contains(world.getName())){
-					theSet.add(world.getName());
+			knownWorlds.addAll(group.getWorlds());
+		}
+/*		for(World world : Bukkit.getWorlds()){
+			if(!knownWorlds.contains(world.getName())){
+				unconfiguredWorlds.add(world.getName());
+			}
+		}
+		if(unconfiguredWorlds.size() > 0){ // if we need a default section this will be greater than zero
+			Bukkit.getLogger().warning("InventoryManager: Auto adding worlds with no explicitly assigned group to default");
+			String path = "inventory.groups.default";
+			if(!plugin.getConfig().contains(path)){
+				// If it doesn't exist than make it exist
+				plugin.getConfig().createSection(path);
+				plugin.getConfig().set(path + ".gamemode", Bukkit.getDefaultGameMode().toString());
+			}
+			
+			List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
+			for(String str : unconfiguredWorlds){
+				if(!worlds.contains(str)){
+					worlds.add(str);
 				}
 			}
-			theSet.add("gamemode:" + Bukkit.getDefaultGameMode());
-		}
-		
-		
-		plugin.getConfig().set("inventory.groups", new ArrayList<String>(groups.keySet()));
-		for(String key : groups.keySet()){
-			plugin.getConfig().set("inventory.groups." + key, groups.get(key));
+			plugin.getConfig().set(path + ".worlds", worlds);
 		}*/
-	}
-
-	private UUID getInventoryForEvent(PlayerState beforeState, PlayerState afterState){
-		UUID theInv = invs.queryAvalInventories(afterState);
-		if (theInv == null){
-			invs.createInventory(BukkitInventories.generateBlankConfig(afterState));
-			theInv = invs.queryAvalInventories(afterState);
-		}
-		return theInv;
+		
 	}
 	
 	private void swapInventory(PlayerState beforeState, PlayerState afterState, Boolean registerOnly){
 		// If registerOnly is null it means not applicable
+		// Be careful about which PlayerState to use because it matters
+		InventoryKey updatedState = getNewInventoryKey(beforeState, afterState.getPlayer(), afterState.getWorld(), afterState.getGamemode());
+		String message = "InventoryManager: Your inventory failed to be ";
+		InventoryResult result = InventoryResult.FAILED;
 		
-		UUID theInv;
 		if(registerOnly == null || registerOnly == Boolean.FALSE){
-			invs.unregisterInventory(beforeState, afterState);
+			result = invs.unregisterInventory(beforeState.toInventoryKey(), updatedState, afterState.getPlayer());
+			
+			if(result == InventoryResult.FAILED){
+				afterState.getPlayer().kickPlayer(message + "unregistered");
+			}
+			
 			if(registerOnly == Boolean.FALSE){
 				return;
 			}
 		}
-		theInv = getInventoryForEvent(beforeState, afterState);	
-		if(registerOnly == null || registerOnly == Boolean.TRUE){
-			invs.registerInventory(beforeState, afterState, theInv);
-		}
 		
-/*		if(afterState.getPlayer().getGameMode() != afterState.getGamemode()){
-			afterState.getPlayer().setGameMode(afterState.getGamemode());
-		}*/
+		invs.checkInventoryForEvent(updatedState, afterState.getPlayer());
+		if(registerOnly == null || registerOnly == Boolean.TRUE){
+			result = invs.registerInventory(beforeState.toInventoryKey(), updatedState, afterState.getPlayer());
+			if(result == InventoryResult.FAILED){
+				afterState.getPlayer().kickPlayer(message + "registered");
+			}
+		}
 	}
 
 	private void forceGamemode(PlayerState evt) {
@@ -238,7 +152,7 @@ public class InventoryManager implements CommandExecutor, Listener {
 				return str;
 			}
 		}
-		return "default";
+		return world.getName();
 	}
 	
 	private GameMode getGamemodeForGroup(String groupName){
@@ -249,25 +163,45 @@ public class InventoryManager implements CommandExecutor, Listener {
 		return Bukkit.getDefaultGameMode();
 	}
 
+	private InventoryKey getNewInventoryKey(PlayerState beforeState, Player player, World world, GameMode gameMode){
+		InventoryKey updatedState = new InventoryKey(player.getUniqueId().toString(), 
+													 world.getName(), 
+													 gameMode.toString(),
+													 null);
+		if(!seperateGamemodeInventories){
+			// We hardcode survival mode so that the matching inventory will be consistent whenever the gamemode doesn't matter
+			updatedState = new InventoryKey(updatedState.getPlayerKey().toString(), 
+											updatedState.getWorldKey(),
+											GameMode.SURVIVAL.toString(), 
+											null);
+		}
+		
+		String beforeWorldGroup = getGroupForWorld(beforeState.getWorld());
+		String afterWorldGroup = getGroupForWorld(world);
+		if(beforeWorldGroup.equalsIgnoreCase(afterWorldGroup)){
+			Bukkit.getLogger().info("World Groups Matched!!");
+			WorldGroup group = worldGroups.get(afterWorldGroup);
+			
+			String gamemode = updatedState.getGamemodeKey().toString();
+			String gplayer = updatedState.getPlayerKey().toString();
+			updatedState = new InventoryKey(gplayer, "group_" + group.getName(), gamemode, null);
+		}
+		return updatedState;
+	}
+	
 	// Command Logic
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		switch (cmd.getName()) {
 		case "inlist":
 			return listInvCommand(sender, cmd, label, args);
-		case "inset":
-			return setInvCommand(sender, cmd, label, args);
-		case "increate":
-			return createInvCommand(sender, cmd, label, args);
-		case "ininfo":
-			return invInfoCommand(sender, cmd, label, args);
 		default:
 			sender.sendMessage("Command Error in the InventoryManager Class!!");
 		}
 		return false;
 	
 	}
-	
+
 	// Event Handlers
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent evt) {
@@ -289,7 +223,7 @@ public class InventoryManager implements CommandExecutor, Listener {
 		swapInventory(beforeState, afterState, null);
 		forceGamemode(afterState);
 	}
-
+   
 	@EventHandler
 	public void onPlayerGamemodeChanged(PlayerGameModeChangeEvent evt) {
 		PlayerState beforeState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getPlayer().getGameMode());
@@ -297,46 +231,8 @@ public class InventoryManager implements CommandExecutor, Listener {
 		swapInventory(beforeState, afterState, null);
 	}
 	
-	// Command Work Code
-	private boolean invInfoCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		//Player player = (Player) sender;
-		//player.sendMessage(invs.getCurrentInventory(player));
-		return false;
-	}
-
-	private boolean createInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		//Player player = (Player) sender;
-		//player.sendMessage(invs.);
-		return false;
-	}
-
-	private boolean setInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		Player player = (Player) sender;
-		player.sendMessage("Updating your inventory");
-		//String str = inventoryKeeper.getCurrentInventory(player);
-		//invs.unregisterInventory(player);
-		//invs.registerInventory(player, UUID.fromString(args[0]));
-		//inventoryKeeper.setPlayerInventory(player, inventoryKeeper.getInventory(args[0]));
-		return true;
-	}
-
 	private boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if(invs.getInventories().size() == 0){
-			sender.sendMessage(ChatColor.GOLD + "There are no Unregistered inventories");
-		} else {
-			for(BukkitInventory inv : invs.getInventories()){
-				sender.sendMessage("Unregistered Inv: " + ChatColor.BLUE + inv.getPlayerState().getPlayer().getDisplayName() + " " + ChatColor.GREEN + inv.getPlayerState().getWorld().getName() + " " + ChatColor.YELLOW + inv.getPlayerState().getGamemode() + " " + ChatColor.WHITE + inv.getInventoryId());
-			}
-		}
-		
-		if(invs.getRegisteredInventories().size() == 0){
-			sender.sendMessage(ChatColor.GOLD + "There are no Registered inventories");
-		} else {
-			for(PlayerState inv : invs.getRegisteredInventories()){
-				sender.sendMessage("Registered Inv: " + ChatColor.BLUE + inv.getPlayer().getDisplayName() + " " + ChatColor.GREEN + inv.getWorld().getName() + " " + ChatColor.YELLOW + inv.getGamemode());
-			}
-		}
-		
+		invs.listInvCommand(sender, cmd, label, args);
 		if(worldGroups.size() == 0){
 			sender.sendMessage(ChatColor.GOLD + " There are no world groups");
 		} else {
