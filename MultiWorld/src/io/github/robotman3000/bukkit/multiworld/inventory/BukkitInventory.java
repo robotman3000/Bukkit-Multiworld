@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -14,8 +15,8 @@ import org.bukkit.util.Vector;
 public class BukkitInventory implements ConfigurationSerializable {
 	private UUID inventoryId = UUID.randomUUID();
 	private boolean canFly = false;
-	private Location bedSpawnPoint;
-	private Location compassTarget;
+	private Location bedSpawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
+	private Location compassTarget = Bukkit.getWorlds().get(0).getSpawnLocation();
 	private String displayName = "Steve";
 	private float exhaustion;
 	private float xpPoints = 0;
@@ -31,25 +32,17 @@ public class BukkitInventory implements ConfigurationSerializable {
 	private ItemStack[] armorContents = new ItemStack[0];
 	private ItemStack[] inventoryContents = new ItemStack[0];
 	private ItemStack[] enderChest = new ItemStack[0];
-	private Location playerLocation;
-	private PlayerState playerState;
+	private Location playerLocation = Bukkit.getWorlds().get(0).getSpawnLocation();
 
-	/**
-	 * This constructor is meant for use by gson
-	 * @Deprecated
-	 */
-	@Deprecated
 	public BukkitInventory(){
 		
 	}
 
 	public BukkitInventory(PlayerState playerState){
-		this.setPlayerState(playerState);
 		this.configureForplayer(playerState.getPlayer());
 	}
 
-	protected BukkitInventory(PlayerState playerState, UUID uuid){
-		this.setPlayerState(playerState);
+	protected BukkitInventory(UUID uuid){
 		this.inventoryId = uuid;
 	}
 	
@@ -241,13 +234,29 @@ public class BukkitInventory implements ConfigurationSerializable {
 		setEnderChest(player.getEnderChest().getContents());
 		setLocation(player.getLocation());
 	}
-
-	public PlayerState getPlayerState() {
-		return playerState;
-	}
-
-	private void setPlayerState(PlayerState playerState) {
-		this.playerState = playerState;
+	
+	public static BukkitInventory getInventoryForplayer(Player player){
+		BukkitInventory inv = new BukkitInventory();
+		inv.setCanFly(player.getAllowFlight());
+		inv.setBedSpawnPoint(player.getBedSpawnLocation());
+		inv.setCompassTarget(player.getCompassTarget());
+		inv.setDisplayName(player.getDisplayName());
+		inv.setExhaustion(player.getExhaustion());
+		inv.setXpPoints(player.getExp());
+		inv.setFallDistance(player.getFallDistance());
+		inv.setFireTicks(player.getFireTicks());
+		inv.setFlying(player.isFlying());
+		inv.setFoodLevel(player.getFoodLevel());
+		inv.setHealthPoints(player.getHealth());
+		inv.setXpLevel(player.getLevel());
+		inv.setRemainingAir(player.getRemainingAir());
+		inv.setFoodSaturation(player.getSaturation());
+		inv.setVelocity(player.getVelocity());
+		inv.setArmorContents(player.getInventory().getArmorContents());
+		inv.setInventoryContents(player.getInventory().getContents());
+		inv.setEnderChest(player.getEnderChest().getContents());
+		inv.setLocation(player.getLocation());
+		return inv;
 	}
 
 	@Override
@@ -273,7 +282,6 @@ public class BukkitInventory implements ConfigurationSerializable {
 		map.put("inventoryContents", inventoryContents);
 		map.put("enderChest", enderChest);
 		map.put("playerLocation", playerLocation);
-		map.put("playerKey", playerState);
 		return map;
 	}
 	
@@ -299,7 +307,6 @@ public class BukkitInventory implements ConfigurationSerializable {
 		inv.inventoryContents = toItemStackArray(map.get("inventoryContents"));
 		inv.enderChest = toItemStackArray(map.get("enderChest"));
 		inv.playerLocation = (Location) map.get("playerLocation");
-		inv.playerState = (PlayerState) map.get("playerKey");
 		return inv;
 	}
 
