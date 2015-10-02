@@ -27,220 +27,236 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 //TODO: Add logging
 public class InventoryManager implements CommandExecutor, Listener {
-	//TODO: make this private
-	public final String[] commands = {"inlist"};
-	private BukkitInventories invs = new BukkitInventories();
-	private final MultiWorld plugin;
-	
-	private Map<String, WorldGroup> worldGroups = new HashMap<>();
+    // TODO: make this private
+    public final String[] commands = { "inlist" };
+    private final BukkitInventories invs = new BukkitInventories();
+    private final MultiWorld plugin;
 
-	public boolean seperateGamemodeInventories;
-	public boolean teleportOnSwich; // TODO: Add this feature; Implement it the same way as forceGamemode is done
-	public boolean forceGamemode;
-	
-	public InventoryManager(MultiWorld multiWorld) {
-		this.plugin = multiWorld;
-	}
+    private final Map<String, WorldGroup> worldGroups = new HashMap<>();
 
-	public void loadInventoryConfig() {
-		invs.readInventoryConfig(plugin);
-		
-		// Load the world groups
-		Set<String> groupKeys = plugin.getConfig().getConfigurationSection("inventory.groups").getKeys(false);
-		for(String groupKey : groupKeys){
-			String path = "inventory.groups." + groupKey;
-			List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
-			Bukkit.getLogger().warning("Worlds " + path + " " + worlds);
-			String gamemodeStr = plugin.getConfig().getString(path + ".gamemode");
-			Bukkit.getLogger().warning(gamemodeStr);
-			GameMode gamemode = Bukkit.getDefaultGameMode();
-			try{
-				gamemode = GameMode.valueOf(gamemodeStr);
-			} catch (Exception e){}
-			
-			WorldGroup wGroup = new WorldGroup(groupKey, gamemode, worlds);
-			worldGroups.put(groupKey, wGroup);
-		}
-	}
+    public boolean seperateGamemodeInventories;
+    public boolean teleportOnSwich; // TODO: Add this feature; Implement it the same way as
+                                    // forceGamemode is done
+    public boolean forceGamemode;
 
-	public void saveInventoryConfig() {
-		invs.saveInventoryConfig(plugin);
-		
-		// Save the world groups and gamemode settings
-		HashSet<String> knownWorlds = new HashSet<>();
-		//HashSet<String> unconfiguredWorlds = new HashSet<>();
-		for(String groupkey : worldGroups.keySet()){
-			String path = "inventory.groups." + groupkey;
-			WorldGroup group = worldGroups.get(groupkey);
-			plugin.getConfig().createSection(path);
-			plugin.getConfig().set(path + ".gamemode", group.getGamemode().toString());
-			plugin.getConfig().set(path + ".worlds", group.getWorlds());
-			
-			knownWorlds.addAll(group.getWorlds());
-		}
-/*		for(World world : Bukkit.getWorlds()){
-			if(!knownWorlds.contains(world.getName())){
-				unconfiguredWorlds.add(world.getName());
-			}
-		}
-		if(unconfiguredWorlds.size() > 0){ // if we need a default section this will be greater than zero
-			Bukkit.getLogger().warning("InventoryManager: Auto adding worlds with no explicitly assigned group to default");
-			String path = "inventory.groups.default";
-			if(!plugin.getConfig().contains(path)){
-				// If it doesn't exist than make it exist
-				plugin.getConfig().createSection(path);
-				plugin.getConfig().set(path + ".gamemode", Bukkit.getDefaultGameMode().toString());
-			}
-			
-			List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
-			for(String str : unconfiguredWorlds){
-				if(!worlds.contains(str)){
-					worlds.add(str);
-				}
-			}
-			plugin.getConfig().set(path + ".worlds", worlds);
-		}*/
-		
-	}
-	
-	private void swapInventory(PlayerState beforeState, PlayerState afterState, Boolean registerOnly){
-		// If registerOnly is null it means not applicable
-		// Be careful about which PlayerState to use because it matters
-		InventoryKey updatedState = getNewInventoryKey(beforeState, afterState.getPlayer(), afterState.getWorld(), afterState.getGamemode());
-		String message = "InventoryManager: Your inventory failed to be ";
-		InventoryResult result = InventoryResult.FAILED;
-		
-		if(registerOnly == null || registerOnly == Boolean.FALSE){
-			result = invs.unregisterInventory(beforeState.toInventoryKey(), updatedState, afterState.getPlayer());
-			
-			if(result == InventoryResult.FAILED){
-				afterState.getPlayer().kickPlayer(message + "unregistered");
-			}
-			
-			if(registerOnly == Boolean.FALSE){
-				return;
-			}
-		}
-		
-		invs.checkInventoryForEvent(updatedState, afterState.getPlayer());
-		if(registerOnly == null || registerOnly == Boolean.TRUE){
-			result = invs.registerInventory(beforeState.toInventoryKey(), updatedState, afterState.getPlayer());
-			if(result == InventoryResult.FAILED){
-				afterState.getPlayer().kickPlayer(message + "registered");
-			}
-		}
-	}
+    public InventoryManager(MultiWorld multiWorld) {
+        plugin = multiWorld;
+    }
 
-	private void forceGamemode(PlayerState evt) {
-		if(forceGamemode){
-			GameMode gamemode = getGamemodeForWorld(evt.getPlayer().getWorld());
-			if(!gamemode.equals(evt.getGamemode())){
-				evt.getPlayer().setGameMode(gamemode);
-			}
-		}
-	}
-	
-	private GameMode getGamemodeForWorld(World world) {
-		String worldGroup = getGroupForWorld(world);
-		return getGamemodeForGroup(worldGroup);
-	}
+    private void forceGamemode(InventoryKey key, Player player) {
+        if (forceGamemode) {
+            GameMode gamemode = getGamemodeForWorld(player.getWorld());
+            if (!gamemode.equals(key.getGamemodeKey())) {
+                player.setGameMode(gamemode);
+            }
+        }
+    }
 
-	private String getGroupForWorld(World world) {
-		for(String str : worldGroups.keySet()){
-			WorldGroup group = worldGroups.get(str);
-			if(group.getWorlds().contains(world.getName())){
-				return str;
-			}
-		}
-		return world.getName();
-	}
-	
-	private GameMode getGamemodeForGroup(String groupName){
-		WorldGroup gamemode = worldGroups.get(groupName);
-		if(gamemode != null){
-			return gamemode.getGamemode();
-		}
-		return Bukkit.getDefaultGameMode();
-	}
+    private GameMode getGamemodeForGroup(String groupName) {
+        WorldGroup gamemode = worldGroups.get(groupName);
+        if (gamemode != null) {
+            return gamemode.getGamemode();
+        }
+        return Bukkit.getDefaultGameMode();
+    }
 
-	private InventoryKey getNewInventoryKey(PlayerState beforeState, Player player, World world, GameMode gameMode){
-		InventoryKey updatedState = new InventoryKey(player.getUniqueId().toString(), 
-													 world.getName(), 
-													 gameMode.toString(),
-													 null);
-		if(!seperateGamemodeInventories){
-			// We hardcode survival mode so that the matching inventory will be consistent whenever the gamemode doesn't matter
-			updatedState = new InventoryKey(updatedState.getPlayerKey().toString(), 
-											updatedState.getWorldKey(),
-											GameMode.SURVIVAL.toString(), 
-											null);
-		}
-		
-		String beforeWorldGroup = getGroupForWorld(beforeState.getWorld());
-		String afterWorldGroup = getGroupForWorld(world);
-		if(beforeWorldGroup.equalsIgnoreCase(afterWorldGroup)){
-			Bukkit.getLogger().info("World Groups Matched!!");
-			WorldGroup group = worldGroups.get(afterWorldGroup);
-			
-			String gamemode = updatedState.getGamemodeKey().toString();
-			String gplayer = updatedState.getPlayerKey().toString();
-			updatedState = new InventoryKey(gplayer, "group_" + group.getName(), gamemode, null);
-		}
-		return updatedState;
-	}
-	
-	// Command Logic
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		switch (cmd.getName()) {
-		case "inlist":
-			return listInvCommand(sender, cmd, label, args);
-		default:
-			sender.sendMessage("Command Error in the InventoryManager Class!!");
-		}
-		return false;
-	
-	}
+    private GameMode getGamemodeForWorld(World world) {
+        String worldGroup = getGroupForWorld(world.getName());
+        return getGamemodeForGroup(worldGroup);
+    }
 
-	// Event Handlers
-	@EventHandler
-	public void onPlayerLeave(PlayerQuitEvent evt) {
-		PlayerState playerState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getPlayer().getGameMode());
-		swapInventory(playerState, playerState, Boolean.FALSE);
-	}
-	
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent evt) {
-		PlayerState playerState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getPlayer().getGameMode());
-		swapInventory(playerState, playerState, Boolean.TRUE);
-		forceGamemode(playerState);
-	}
-	
-	@EventHandler
-	public void onPlayerChangedWorld(PlayerChangedWorldEvent evt) {
-		PlayerState beforeState = new PlayerState(evt.getPlayer(), evt.getFrom(), evt.getPlayer().getGameMode());
-		PlayerState afterState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getPlayer().getGameMode());
-		swapInventory(beforeState, afterState, null);
-		forceGamemode(afterState);
-	}
-   
-	@EventHandler
-	public void onPlayerGamemodeChanged(PlayerGameModeChangeEvent evt) {
-		PlayerState beforeState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getPlayer().getGameMode());
-		PlayerState afterState = new PlayerState(evt.getPlayer(), evt.getPlayer().getWorld(), evt.getNewGameMode());
-		swapInventory(beforeState, afterState, null);
-	}
-	
-	private boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		invs.listInvCommand(sender, cmd, label, args);
-		if(worldGroups.size() == 0){
-			sender.sendMessage(ChatColor.GOLD + " There are no world groups");
-		} else {
-			for(String str : worldGroups.keySet()){
-				WorldGroup group = worldGroups.get(str);
-				sender.sendMessage("World Group (" + str + "): " + ChatColor.BLUE + group.getName() + " " + ChatColor.GREEN + group.getWorlds() + " " + ChatColor.YELLOW + group.getGamemode());
-			}
-		}
-		return true;
-	}
+    private String getGroupForWorld(String world) {
+        for (String str : worldGroups.keySet()) {
+            WorldGroup group = worldGroups.get(str);
+            if (group.getWorlds().contains(world)) {
+                return "group_" + str;
+            }
+        }
+        return world;
+    }
+
+    private InventoryKey getNewInventoryKey(InventoryKey beforeState, InventoryKey afterState,
+            Player player) {
+        InventoryKey updatedState = new InventoryKey(player.getUniqueId().toString(),
+                afterState.getWorldKey(), afterState.getGamemodeKey().toString(), null);
+        if (!seperateGamemodeInventories) {
+            // We hardcode survival mode so that the matching inventory will be consistent whenever
+            // the gamemode doesn't matter
+            updatedState = new InventoryKey(updatedState.getPlayerKey().toString(),
+                    updatedState.getWorldKey(), GameMode.SURVIVAL.toString(), null);
+        }
+
+        String beforeWorldGroup = getGroupForWorld(beforeState.getWorldKey());
+        String afterWorldGroup = getGroupForWorld(afterState.getWorldKey());
+        if (beforeWorldGroup.equalsIgnoreCase(afterWorldGroup)) {
+            Bukkit.getLogger().info("World Groups Matched!!");
+            // WorldGroup group = worldGroups.get(afterWorldGroup);
+
+            String gamemode = updatedState.getGamemodeKey().toString();
+            String gplayer = updatedState.getPlayerKey().toString();
+            updatedState = new InventoryKey(gplayer, afterWorldGroup, gamemode, null);
+        }
+        return updatedState;
+    }
+
+    private boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        invs.listInvCommand(sender, cmd, label, args);
+        if (worldGroups.size() == 0) {
+            sender.sendMessage(ChatColor.GOLD + " There are no world groups");
+        } else {
+            for (String str : worldGroups.keySet()) {
+                WorldGroup group = worldGroups.get(str);
+                sender.sendMessage("World Group (" + str + "): " + ChatColor.BLUE + group.getName()
+                        + " " + ChatColor.GREEN + group.getWorlds() + " " + ChatColor.YELLOW
+                        + group.getGamemode());
+            }
+        }
+        return true;
+    }
+
+    public void loadInventoryConfig() {
+        invs.readInventoryConfig(plugin);
+
+        // Load the world groups
+        Set<String> groupKeys = plugin.getConfig().getConfigurationSection("inventory.groups")
+                .getKeys(false);
+        for (String groupKey : groupKeys) {
+            String path = "inventory.groups." + groupKey;
+            List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
+            Bukkit.getLogger().warning("Worlds " + path + " " + worlds);
+            String gamemodeStr = plugin.getConfig().getString(path + ".gamemode");
+            Bukkit.getLogger().warning(gamemodeStr);
+            GameMode gamemode = Bukkit.getDefaultGameMode();
+            try {
+                gamemode = GameMode.valueOf(gamemodeStr);
+            } catch (Exception e) {
+            }
+
+            WorldGroup wGroup = new WorldGroup(groupKey, gamemode, worlds);
+            worldGroups.put(groupKey, wGroup);
+        }
+    }
+
+    // Command Logic
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        switch (cmd.getName()) {
+        case "inlist":
+            return listInvCommand(sender, cmd, label, args);
+        default:
+            sender.sendMessage("Command Error in the InventoryManager Class!!");
+        }
+        return false;
+
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent evt) {
+        InventoryKey beforeState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getFrom().getName()),
+                evt.getPlayer().getGameMode().toString(), null);
+        InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
+                        .getGameMode().toString(), null);
+        swapInventory(beforeState, afterState, evt.getPlayer(), null);
+        forceGamemode(afterState, evt.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerGamemodeChanged(PlayerGameModeChangeEvent evt) {
+        InventoryKey beforeState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
+                        .getGameMode().toString(), null);
+        InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getNewGameMode()
+                        .toString(), null);
+        swapInventory(beforeState, afterState, evt.getPlayer(), null);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent evt) {
+        InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
+                        .getGameMode().toString(), null);
+        swapInventory(playerState, playerState, evt.getPlayer(), Boolean.TRUE);
+        forceGamemode(playerState, evt.getPlayer());
+    }
+
+    // Event Handlers
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent evt) {
+        InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
+                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
+                        .getGameMode().toString(), null);
+        swapInventory(playerState, playerState, evt.getPlayer(), Boolean.FALSE);
+    }
+
+    public void saveInventoryConfig() {
+        invs.saveInventoryConfig(plugin);
+
+        // Save the world groups and gamemode settings
+        HashSet<String> knownWorlds = new HashSet<>();
+        // HashSet<String> unconfiguredWorlds = new HashSet<>();
+        for (String groupkey : worldGroups.keySet()) {
+            String path = "inventory.groups." + groupkey;
+            WorldGroup group = worldGroups.get(groupkey);
+            plugin.getConfig().createSection(path);
+            plugin.getConfig().set(path + ".gamemode", group.getGamemode().toString());
+            plugin.getConfig().set(path + ".worlds", group.getWorlds());
+
+            knownWorlds.addAll(group.getWorlds());
+        }
+        /*		for(World world : Bukkit.getWorlds()){
+        	if(!knownWorlds.contains(world.getName())){
+        		unconfiguredWorlds.add(world.getName());
+        	}
+        }
+        if(unconfiguredWorlds.size() > 0){ // if we need a default section this will be greater than zero
+        	Bukkit.getLogger().warning("InventoryManager: Auto adding worlds with no explicitly assigned group to default");
+        	String path = "inventory.groups.default";
+        	if(!plugin.getConfig().contains(path)){
+        		// If it doesn't exist than make it exist
+        		plugin.getConfig().createSection(path);
+        		plugin.getConfig().set(path + ".gamemode", Bukkit.getDefaultGameMode().toString());
+        	}
+
+        	List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
+        	for(String str : unconfiguredWorlds){
+        		if(!worlds.contains(str)){
+        			worlds.add(str);
+        		}
+        	}
+        	plugin.getConfig().set(path + ".worlds", worlds);
+        }*/
+
+    }
+
+    private void swapInventory(InventoryKey beforeState, InventoryKey afterState, Player player,
+            Boolean registerOnly) {
+        // If registerOnly is null it means not applicable
+        // Be careful about which PlayerState to use because it matters
+        InventoryKey updatedState = getNewInventoryKey(beforeState, afterState, player);
+        String message = "InventoryManager: Your inventory failed to be ";
+        InventoryResult result = InventoryResult.FAILED;
+
+        if (registerOnly == null || registerOnly == Boolean.FALSE) {
+            result = invs.unregisterInventory(beforeState, updatedState, player);
+
+            if (result == InventoryResult.FAILED) {
+                player.kickPlayer(message + "unregistered");
+            }
+
+            if (registerOnly == Boolean.FALSE) {
+                return;
+            }
+        }
+
+        invs.checkInventoryForEvent(updatedState, player);
+        if (registerOnly == null || registerOnly == Boolean.TRUE) {
+            result = invs.registerInventory(beforeState, updatedState, player);
+            if (result == InventoryResult.FAILED) {
+                player.kickPlayer(message + "registered");
+            }
+        }
+    }
 }

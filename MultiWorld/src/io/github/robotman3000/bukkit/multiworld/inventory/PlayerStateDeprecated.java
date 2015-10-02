@@ -1,5 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
-public class PlayerState implements ConfigurationSerializable {
+public class PlayerStateDeprecated implements ConfigurationSerializable {
 
 	private GameMode gamemode;
 	
@@ -20,11 +21,11 @@ public class PlayerState implements ConfigurationSerializable {
 	private Player player;
 	private UUID playerId;
 	
-	public PlayerState(){
+	public PlayerStateDeprecated(){
 		
 	}
 	
-	public PlayerState(Player player, World world, GameMode gamemode){
+	public PlayerStateDeprecated(Player player, World world, GameMode gamemode){
 		this.setGamemode(gamemode);
 		this.setWorld(world);
 		this.setPlayer(player);
@@ -89,7 +90,7 @@ public class PlayerState implements ConfigurationSerializable {
 		return map;
 	}
 	
-	public static PlayerState deserialize(Map<String, Object> map){
+	public static PlayerStateDeprecated deserialize(Map<String, Object> map){
 		PlayerState ps = new PlayerState(
 				Bukkit.getPlayer(UUID.fromString(map.get("player").toString())), 
 				Bukkit.getWorld(UUID.fromString(map.get("world").toString())),
