@@ -22,7 +22,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class BukkitInventorySerializer implements JsonSerializer<BukkitInventory>, JsonDeserializer<BukkitInventory> {
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "unused" })
 	@Override
 	public BukkitInventory deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
 
@@ -33,7 +33,7 @@ public class BukkitInventorySerializer implements JsonSerializer<BukkitInventory
 		UUID invId = UUID.fromString(root.get("inventoryId").getAsString());
 		PlayerState playerSt = PlayerState.deserialize((Map<String, Object>) gson.fromJson(root.get("playerState"), type));
 		
-		BukkitInventory inv = new BukkitInventory(playerSt, invId);
+		BukkitInventory inv = new BukkitInventory(/*playerSt, invId*/);
 		
 		List<ItemStack> armor = new ArrayList<ItemStack>();
 		for(int index = 0; root.has("armorSlot" + index); index++){
@@ -97,7 +97,7 @@ public class BukkitInventorySerializer implements JsonSerializer<BukkitInventory
 		root.add("bedSpawnPoint", new Gson().toJsonTree(arg0.getBedSpawnPoint().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
 		root.add("compassTarget", new Gson().toJsonTree(arg0.getCompassTarget().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
 		root.add("location", new Gson().toJsonTree(arg0.getLocation().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
-		root.add("playerState", new Gson().toJsonTree(arg0.getPlayerState().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
+		//root.add("playerState", new Gson().toJsonTree(arg0.getPlayerState().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
 		root.add("velocity", new Gson().toJsonTree(arg0.getVelocity().serialize(), new TypeToken<Map<String, Object>>(){}.getType()));
 		
 		root.addProperty("displayName", arg0.getDisplayName());

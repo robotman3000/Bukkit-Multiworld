@@ -13,318 +13,321 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class BukkitInventory implements ConfigurationSerializable {
-	private UUID inventoryId = UUID.randomUUID();
-	private boolean canFly = false;
-	private Location bedSpawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
-	private Location compassTarget = Bukkit.getWorlds().get(0).getSpawnLocation();
-	private String displayName = "Steve";
-	private float exhaustion;
-	private float xpPoints = 0;
-	private float fallDistance = 0;
-	private int fireTicks = 0;
-	private boolean isFlying = false;
-	private int foodLevel = 20;
-	private double healthPoints = 20;
-	private int xpLevel = 0;
-	private int remainingAir = 300;
-	private float foodSaturation;
-	private Vector velocity = new Vector();
-	private ItemStack[] armorContents = new ItemStack[0];
-	private ItemStack[] inventoryContents = new ItemStack[0];
-	private ItemStack[] enderChest = new ItemStack[0];
-	private Location playerLocation = Bukkit.getWorlds().get(0).getSpawnLocation();
+    public static BukkitInventory deserialize(Map<String, Object> map) {
+        BukkitInventory inv = new BukkitInventory();
+        inv.inventoryId = UUID.fromString(map.get("inventoryId").toString());
+        inv.canFly = (boolean) map.get("canFly");
+        inv.bedSpawnPoint = (Location) map.get("bedSpawnPoint");
+        inv.compassTarget = (Location) map.get("compassTarget");
+        inv.displayName = (String) map.get("displayName");
+        inv.exhaustion = Float.valueOf(map.get("exhaustion").toString());
+        inv.xpPoints = Float.valueOf(map.get("xpPoints").toString());
+        inv.fallDistance = Float.valueOf(map.get("fallDistance").toString());
+        inv.fireTicks = Integer.valueOf(map.get("fireTicks").toString());
+        inv.isFlying = (boolean) map.get("isFlying");
+        inv.foodLevel = Integer.valueOf(map.get("foodLevel").toString());
+        inv.healthPoints = (double) map.get("healthPoints");
+        inv.xpLevel = Integer.valueOf(map.get("xpLevel").toString());
+        inv.remainingAir = Integer.valueOf(map.get("remainingAir").toString());
+        inv.foodSaturation = Float.valueOf(map.get("foodSaturation").toString());
+        inv.velocity = (Vector) map.get("velocity");
+        inv.armorContents = BukkitInventory.toItemStackArray(map.get("armorContents"));
+        inv.inventoryContents = BukkitInventory.toItemStackArray(map.get("inventoryContents"));
+        inv.enderChest = BukkitInventory.toItemStackArray(map.get("enderChest"));
+        inv.playerLocation = (Location) map.get("playerLocation");
+        return inv;
+    }
 
-	public BukkitInventory(){
-		
-	}
+    public static BukkitInventory getInventoryForplayer(Player player) {
+        BukkitInventory inv = new BukkitInventory();
+        inv.setCanFly(player.getAllowFlight());
+        inv.setBedSpawnPoint(player.getBedSpawnLocation());
+        inv.setCompassTarget(player.getCompassTarget());
+        inv.setDisplayName(player.getDisplayName());
+        inv.setExhaustion(player.getExhaustion());
+        inv.setXpPoints(player.getExp());
+        inv.setFallDistance(player.getFallDistance());
+        inv.setFireTicks(player.getFireTicks());
+        inv.setFlying(player.isFlying());
+        inv.setFoodLevel(player.getFoodLevel());
+        inv.setHealthPoints(player.getHealth());
+        inv.setXpLevel(player.getLevel());
+        inv.setRemainingAir(player.getRemainingAir());
+        inv.setFoodSaturation(player.getSaturation());
+        inv.setVelocity(player.getVelocity());
+        inv.setArmorContents(player.getInventory().getArmorContents());
+        inv.setInventoryContents(player.getInventory().getContents());
+        inv.setEnderChest(player.getEnderChest().getContents());
+        inv.setLocation(player.getLocation());
+        return inv;
+    }
 
-	public BukkitInventory(PlayerState playerState){
-		this.configureForplayer(playerState.getPlayer());
-	}
+    @SuppressWarnings("unchecked")
+    private static ItemStack[] toItemStackArray(Object object) {
+        ArrayList<ItemStack> items = new ArrayList<>();
 
-	protected BukkitInventory(UUID uuid){
-		this.inventoryId = uuid;
-	}
-	
-	protected void setLocation(Location location) {
-		this.playerLocation = location;
-	}
+        if (object instanceof ArrayList<?>) {
+            ArrayList<Object> list = (ArrayList<Object>) object;
+            for (Object item : list) {
+                if (item instanceof ItemStack) {
+                    items.add((ItemStack) item);
+                } else {
+                    items.add(null);
+                }
+            }
+            return items.toArray(new ItemStack[0]);
+        }
+        return new ItemStack[0];
+    }
 
-	public UUID getInventoryId() {
-		return inventoryId;
-	}
+    private UUID inventoryId = UUID.randomUUID();
+    private boolean canFly = false;
+    private Location bedSpawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
+    private Location compassTarget = Bukkit.getWorlds().get(0).getSpawnLocation();
+    private String displayName = "Steve";
+    private float exhaustion;
+    private float xpPoints = 0;
+    private float fallDistance = 0;
+    private int fireTicks = 0;
+    private boolean isFlying = false;
+    private int foodLevel = 20;
+    private double healthPoints = 20;
+    private int xpLevel = 0;
+    private int remainingAir = 300;
+    private float foodSaturation;
+    private Vector velocity = new Vector();
+    private ItemStack[] armorContents = new ItemStack[0];
 
-	public boolean canFly() {
-		return canFly;
-	}
+    private ItemStack[] inventoryContents = new ItemStack[0];
 
-	public Location getBedSpawnPoint() {
-		return bedSpawnPoint;
-	}
+    private ItemStack[] enderChest = new ItemStack[0];
 
-	public Location getCompassTarget() {
-		return compassTarget;
-	}
+    private Location playerLocation = Bukkit.getWorlds().get(0).getSpawnLocation();
 
-	public String getDisplayName() {
-		return displayName;
-	}
+    public BukkitInventory() {
 
-	public float getExhaustion() {
-		return exhaustion;
-	}
+    }
 
-	public float getXpPoints() {
-		return xpPoints;
-	}
+    public BukkitInventory(Player playerState) {
+        configureForplayer(playerState);
+    }
 
-	public float getFallDistance() {
-		return fallDistance;
-	}
+    protected BukkitInventory(UUID uuid) {
+        inventoryId = uuid;
+    }
 
-	public int getFireTicks() {
-		return fireTicks;
-	}
+    public boolean canFly() {
+        return canFly;
+    }
 
-	public boolean isFlying() {
-		return isFlying;
-	}
+    private void configureForplayer(Player player) {
+        setCanFly(player.getAllowFlight());
+        setBedSpawnPoint(player.getBedSpawnLocation());
+        setCompassTarget(player.getCompassTarget());
+        setDisplayName(player.getDisplayName());
+        setExhaustion(player.getExhaustion());
+        setXpPoints(player.getExp());
+        setFallDistance(player.getFallDistance());
+        setFireTicks(player.getFireTicks());
+        setFlying(player.isFlying());
+        setFoodLevel(player.getFoodLevel());
+        setHealthPoints(player.getHealth());
+        setXpLevel(player.getLevel());
+        setRemainingAir(player.getRemainingAir());
+        setFoodSaturation(player.getSaturation());
+        setVelocity(player.getVelocity());
+        setArmorContents(player.getInventory().getArmorContents());
+        setInventoryContents(player.getInventory().getContents());
+        setEnderChest(player.getEnderChest().getContents());
+        setLocation(player.getLocation());
+    }
 
-	public int getFoodLevel() {
-		return foodLevel;
-	}
+    @Override
+    public boolean equals(Object conf) {
+        if (conf instanceof BukkitInventory) {
+            BukkitInventory inv = (BukkitInventory) conf;
+            if (inventoryId.equals(inv.inventoryId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public double getHealthPoints() {
-		return healthPoints;
-	}
+    public ItemStack[] getArmorContents() {
+        return armorContents;
+    }
 
-	public int getXpLevel() {
-		return xpLevel;
-	}
+    public Location getBedSpawnPoint() {
+        return bedSpawnPoint;
+    }
 
-	public int getRemainingAir() {
-		return remainingAir;
-	}
+    public Location getCompassTarget() {
+        return compassTarget;
+    }
 
-	public float getFoodSaturation() {
-		return foodSaturation;
-	}
+    public String getDisplayName() {
+        return displayName;
+    }
 
-	public Vector getVelocity() {
-		return velocity;
-	}
+    public ItemStack[] getEnderChest() {
+        return enderChest;
+    }
 
-	public ItemStack[] getArmorContents() {
-		return armorContents;
-	}
+    public float getExhaustion() {
+        return exhaustion;
+    }
 
-	public ItemStack[] getInventoryContents() {
-		return inventoryContents;
-	}
+    public float getFallDistance() {
+        return fallDistance;
+    }
 
-	protected void setCanFly(boolean canFly) {
-		this.canFly = canFly;
-	}
+    public int getFireTicks() {
+        return fireTicks;
+    }
 
-	protected void setBedSpawnPoint(Location bedSpawnPoint) {
-		this.bedSpawnPoint = bedSpawnPoint;
-	}
+    public int getFoodLevel() {
+        return foodLevel;
+    }
 
-	protected void setCompassTarget(Location compassTarget) {
-		this.compassTarget = compassTarget;
-	}
+    public float getFoodSaturation() {
+        return foodSaturation;
+    }
 
-	protected void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
+    public double getHealthPoints() {
+        return healthPoints;
+    }
 
-	protected void setExhaustion(float exhaustion) {
-		this.exhaustion = exhaustion;
-	}
+    public ItemStack[] getInventoryContents() {
+        return inventoryContents;
+    }
 
-	protected void setXpPoints(float xpPoints) {
-		this.xpPoints = xpPoints;
-	}
+    public UUID getInventoryId() {
+        return inventoryId;
+    }
 
-	protected void setFallDistance(float fallDistance) {
-		this.fallDistance = fallDistance;
-	}
+    public Location getLocation() {
+        return playerLocation;
+    }
 
-	protected void setFireTicks(int fireTicks) {
-		this.fireTicks = fireTicks;
-	}
+    public int getRemainingAir() {
+        return remainingAir;
+    }
 
-	protected void setFlying(boolean isFlying) {
-		this.isFlying = isFlying;
-	}
+    public Vector getVelocity() {
+        return velocity;
+    }
 
-	protected void setFoodLevel(int foodLevel) {
-		this.foodLevel = foodLevel;
-	}
+    public int getXpLevel() {
+        return xpLevel;
+    }
 
-	protected void setHealthPoints(double healthPoints) {
-		this.healthPoints = healthPoints;
-	}
+    public float getXpPoints() {
+        return xpPoints;
+    }
 
-	protected void setXpLevel(int xpLevel) {
-		this.xpLevel = xpLevel;
-	}
+    public boolean isFlying() {
+        return isFlying;
+    }
 
-	protected void setRemainingAir(int remainingAir) {
-		this.remainingAir = remainingAir;
-	}
+    @Override
+    public Map<String, Object> serialize() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("inventoryId", inventoryId.toString());
+        map.put("canFly", canFly);
+        map.put("bedSpawnPoint", bedSpawnPoint);
+        map.put("compassTarget", compassTarget);
+        map.put("displayName", displayName);
+        map.put("exhaustion", exhaustion);
+        map.put("xpPoints", xpPoints);
+        map.put("fallDistance", fallDistance);
+        map.put("fireTicks", fireTicks);
+        map.put("isFlying", isFlying);
+        map.put("foodLevel", foodLevel);
+        map.put("healthPoints", healthPoints);
+        map.put("xpLevel", xpLevel);
+        map.put("remainingAir", remainingAir);
+        map.put("foodSaturation", foodSaturation);
+        map.put("velocity", velocity);
+        map.put("armorContents", armorContents);
+        map.put("inventoryContents", inventoryContents);
+        map.put("enderChest", enderChest);
+        map.put("playerLocation", playerLocation);
+        return map;
+    }
 
-	protected void setFoodSaturation(float foodSaturation) {
-		this.foodSaturation = foodSaturation;
-	}
+    protected void setArmorContents(ItemStack[] armorContents) {
+        this.armorContents = armorContents;
+    }
 
-	protected void setVelocity(Vector velocity) {
-		this.velocity = velocity;
-	}
-	
-	protected void setArmorContents(ItemStack[] armorContents) {
-		this.armorContents = armorContents;
-	}
+    protected void setBedSpawnPoint(Location bedSpawnPoint) {
+        this.bedSpawnPoint = bedSpawnPoint;
+    }
 
-	protected void setInventoryContents(ItemStack[] inventoryContents) {
-		this.inventoryContents = inventoryContents;
-	}
+    protected void setCanFly(boolean canFly) {
+        this.canFly = canFly;
+    }
 
-	protected void setEnderChest(ItemStack[] enderChest) {
-		this.enderChest = enderChest;
-	}
+    protected void setCompassTarget(Location compassTarget) {
+        this.compassTarget = compassTarget;
+    }
 
-	public ItemStack[] getEnderChest() {
-		return enderChest;
-	}
-	
-	public Location getLocation(){
-		return playerLocation;	
-	}
-	
-	@Override
-	public boolean equals(Object conf){
-		if(conf instanceof BukkitInventory){
-			BukkitInventory inv = (BukkitInventory) conf;
-			if(this.inventoryId.equals(inv.inventoryId)){
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private void configureForplayer(Player player){
-		setCanFly(player.getAllowFlight());
-		setBedSpawnPoint(player.getBedSpawnLocation());
-		setCompassTarget(player.getCompassTarget());
-		setDisplayName(player.getDisplayName());
-		setExhaustion(player.getExhaustion());
-		setXpPoints(player.getExp());
-		setFallDistance(player.getFallDistance());
-		setFireTicks(player.getFireTicks());
-		setFlying(player.isFlying());
-		setFoodLevel(player.getFoodLevel());
-		setHealthPoints(player.getHealth());
-		setXpLevel(player.getLevel());
-		setRemainingAir(player.getRemainingAir());
-		setFoodSaturation(player.getSaturation());
-		setVelocity(player.getVelocity());
-		setArmorContents(player.getInventory().getArmorContents());
-		setInventoryContents(player.getInventory().getContents());
-		setEnderChest(player.getEnderChest().getContents());
-		setLocation(player.getLocation());
-	}
-	
-	public static BukkitInventory getInventoryForplayer(Player player){
-		BukkitInventory inv = new BukkitInventory();
-		inv.setCanFly(player.getAllowFlight());
-		inv.setBedSpawnPoint(player.getBedSpawnLocation());
-		inv.setCompassTarget(player.getCompassTarget());
-		inv.setDisplayName(player.getDisplayName());
-		inv.setExhaustion(player.getExhaustion());
-		inv.setXpPoints(player.getExp());
-		inv.setFallDistance(player.getFallDistance());
-		inv.setFireTicks(player.getFireTicks());
-		inv.setFlying(player.isFlying());
-		inv.setFoodLevel(player.getFoodLevel());
-		inv.setHealthPoints(player.getHealth());
-		inv.setXpLevel(player.getLevel());
-		inv.setRemainingAir(player.getRemainingAir());
-		inv.setFoodSaturation(player.getSaturation());
-		inv.setVelocity(player.getVelocity());
-		inv.setArmorContents(player.getInventory().getArmorContents());
-		inv.setInventoryContents(player.getInventory().getContents());
-		inv.setEnderChest(player.getEnderChest().getContents());
-		inv.setLocation(player.getLocation());
-		return inv;
-	}
+    protected void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-	@Override
-	public Map<String, Object> serialize() {
-		HashMap<String, Object> map = new HashMap<>();
-		map.put("inventoryId", inventoryId.toString());
-		map.put("canFly", canFly);
-		map.put("bedSpawnPoint", bedSpawnPoint);
-		map.put("compassTarget", compassTarget); 
-		map.put("displayName", displayName);
-		map.put("exhaustion", exhaustion);
-		map.put("xpPoints", xpPoints);
-		map.put("fallDistance", fallDistance);
-		map.put("fireTicks", fireTicks);
-		map.put("isFlying", isFlying);
-		map.put("foodLevel", foodLevel);
-		map.put("healthPoints", healthPoints);
-		map.put("xpLevel", xpLevel);
-		map.put("remainingAir", remainingAir);
-		map.put("foodSaturation", foodSaturation);
-		map.put("velocity", velocity);
-		map.put("armorContents", armorContents);
-		map.put("inventoryContents", inventoryContents);
-		map.put("enderChest", enderChest);
-		map.put("playerLocation", playerLocation);
-		return map;
-	}
-	
-	public static BukkitInventory deserialize(Map<String, Object> map){
-		BukkitInventory inv = new BukkitInventory();
-		inv.inventoryId = UUID.fromString(map.get("inventoryId").toString());
-		inv.canFly = (boolean) map.get("canFly");
-		inv.bedSpawnPoint = (Location) map.get("bedSpawnPoint");
-		inv.compassTarget = (Location) map.get("compassTarget"); 
-		inv.displayName = (String) map.get("displayName");
-		inv.exhaustion = Float.valueOf(map.get("exhaustion").toString());
-		inv.xpPoints = Float.valueOf(map.get("xpPoints").toString());
-		inv.fallDistance = Float.valueOf(map.get("fallDistance").toString());
-		inv.fireTicks = Integer.valueOf( map.get("fireTicks").toString());
-		inv.isFlying = (boolean) map.get("isFlying");
-		inv.foodLevel = Integer.valueOf( map.get("foodLevel").toString());
-		inv.healthPoints = (double) map.get("healthPoints");
-		inv.xpLevel = Integer.valueOf( map.get("xpLevel").toString());
-		inv.remainingAir = Integer.valueOf( map.get("remainingAir").toString());
-		inv.foodSaturation = Float.valueOf(map.get("foodSaturation").toString());
-		inv.velocity = (Vector) map.get("velocity");
-		inv.armorContents = toItemStackArray(map.get("armorContents"));
-		inv.inventoryContents = toItemStackArray(map.get("inventoryContents"));
-		inv.enderChest = toItemStackArray(map.get("enderChest"));
-		inv.playerLocation = (Location) map.get("playerLocation");
-		return inv;
-	}
+    protected void setEnderChest(ItemStack[] enderChest) {
+        this.enderChest = enderChest;
+    }
 
-	@SuppressWarnings("unchecked")
-	private static ItemStack[] toItemStackArray(Object object) {
-		ArrayList<ItemStack> items = new ArrayList<>();
-		
-		if(object instanceof ArrayList<?>){
-			ArrayList<Object> list = (ArrayList<Object>) object;
-			for(Object item : list){
-				if(item instanceof ItemStack){
-					items.add((ItemStack) item);
-				} else {
-					items.add(null);
-				}
-			}
-			return items.toArray(new ItemStack[0]);
-		}
-		return new ItemStack[0];
-	}
+    protected void setExhaustion(float exhaustion) {
+        this.exhaustion = exhaustion;
+    }
+
+    protected void setFallDistance(float fallDistance) {
+        this.fallDistance = fallDistance;
+    }
+
+    protected void setFireTicks(int fireTicks) {
+        this.fireTicks = fireTicks;
+    }
+
+    protected void setFlying(boolean isFlying) {
+        this.isFlying = isFlying;
+    }
+
+    protected void setFoodLevel(int foodLevel) {
+        this.foodLevel = foodLevel;
+    }
+
+    protected void setFoodSaturation(float foodSaturation) {
+        this.foodSaturation = foodSaturation;
+    }
+
+    protected void setHealthPoints(double healthPoints) {
+        this.healthPoints = healthPoints;
+    }
+
+    protected void setInventoryContents(ItemStack[] inventoryContents) {
+        this.inventoryContents = inventoryContents;
+    }
+
+    protected void setLocation(Location location) {
+        playerLocation = location;
+    }
+
+    protected void setRemainingAir(int remainingAir) {
+        this.remainingAir = remainingAir;
+    }
+
+    protected void setVelocity(Vector velocity) {
+        this.velocity = velocity;
+    }
+
+    protected void setXpLevel(int xpLevel) {
+        this.xpLevel = xpLevel;
+    }
+
+    protected void setXpPoints(float xpPoints) {
+        this.xpPoints = xpPoints;
+    }
 }
