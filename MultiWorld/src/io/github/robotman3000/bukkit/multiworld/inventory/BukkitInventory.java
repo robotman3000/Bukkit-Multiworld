@@ -108,10 +108,14 @@ public class BukkitInventory implements ConfigurationSerializable {
 
     }
 
-    public BukkitInventory(Player playerState) {
-        configureForplayer(playerState);
+    public BukkitInventory(Player playerState, boolean nameOnly) {
+        nameForPlayer(playerState);
+        if (!nameOnly) {
+            configureForplayer(playerState);
+        }
     }
 
+    @Deprecated
     protected BukkitInventory(UUID uuid) {
         inventoryId = uuid;
     }
@@ -227,6 +231,13 @@ public class BukkitInventory implements ConfigurationSerializable {
 
     public boolean isFlying() {
         return isFlying;
+    }
+
+    private void nameForPlayer(Player player) {
+        // This is so that the default display name is set properly
+        setDisplayName(player.getDisplayName());
+        // This is so that the player will always be able to fly in creative mode
+        setCanFly(player.getAllowFlight());
     }
 
     @Override
