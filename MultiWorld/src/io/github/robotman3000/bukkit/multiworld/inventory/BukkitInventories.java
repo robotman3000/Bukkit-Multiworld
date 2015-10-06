@@ -209,19 +209,13 @@ public class BukkitInventories {
     protected InventoryResult registerInventory(InventoryKey beforeState, InventoryKey afterState,
             Player player) {
         for (InventoryKey key : unregisteredInventories) {
-            // Bukkit.getLogger().warning("Key: " + key.toString());
-            // Bukkit.getLogger().warning("Old: " + afterState.toString());
             if (key.equals(afterState)) {
-                // Bukkit.getLogger().warning(ChatColor.GREEN + "TRUE");
-                // Bukkit.getLogger().warning("****************************************************************************");
                 boolean var1 = unregisteredInventories.remove(key);
                 BukkitInventories.updatePlayerInventory(player, key.getInventory());
                 boolean var2 = registeredInventories.add(key);
                 return ((var1 && var2) ? InventoryResult.INVENTORY_REGISTERED
                         : InventoryResult.FAILED);
             }
-            // Bukkit.getLogger().warning(ChatColor.RED + "FALSE");
-            // Bukkit.getLogger().warning("****************************************************************************");
         }
         return InventoryResult.FAILED;
     }
@@ -270,24 +264,14 @@ public class BukkitInventories {
     protected InventoryResult unregisterInventory(InventoryKey beforeState,
             InventoryKey afterState, Player player) {
         for (InventoryKey key : registeredInventories) {
-            Bukkit.getLogger().warning("UKey: " + key.toString());
-            Bukkit.getLogger().warning("UOld: " + beforeState.toString());
             if (key.equals(beforeState)) {
-                Bukkit.getLogger().warning(ChatColor.GREEN + "TRUE");
-                Bukkit.getLogger()
-                        .warning("****************************************************************************");
                 boolean var1 = registeredInventories.remove(key);
                 BukkitInventories.updateInventoryContents(player, key.getInventory());
                 BukkitInventories.zeroPlayerInventory(player);
                 boolean var2 = unregisteredInventories.add(key);
-                Bukkit.getLogger().warning("Var1: " + var1);
-                Bukkit.getLogger().warning("Var2: " + var2);
                 return ((var1 && var2) ? InventoryResult.INVENTORY_REGISTERED
                         : InventoryResult.FAILED);
             }
-            Bukkit.getLogger().warning(ChatColor.RED + "FALSE");
-            Bukkit.getLogger()
-                    .warning("****************************************************************************");
         }
         return InventoryResult.FAILED;
     }

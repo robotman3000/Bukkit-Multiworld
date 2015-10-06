@@ -89,7 +89,7 @@ public class InventoryManager implements CommandExecutor, Listener {
         String beforeWorldGroup = getGroupForWorld(beforeState.getWorldKey());
         String afterWorldGroup = getGroupForWorld(afterState.getWorldKey());
         if (beforeWorldGroup.equalsIgnoreCase(afterWorldGroup)) {
-            Bukkit.getLogger().info("World Groups Matched!!");
+            // Bukkit.getLogger().info("World Groups Matched!!");
             // WorldGroup group = worldGroups.get(afterWorldGroup);
 
             String gamemode = updatedState.getGamemodeKey().toString();
