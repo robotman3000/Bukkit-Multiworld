@@ -4,330 +4,442 @@ import io.github.robotman3000.bukkit.multiworld.CommonLogic;
 import io.github.robotman3000.bukkit.multiworld.MultiWorld;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Random;
+
+import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.world.WorldInitEvent;
 
 public class WorldManager implements Listener, CommandExecutor {
 
-	public final String[] commands = {"mwcreate", /*"mwdelete",*/ "mwload", "mwunload", "mwinfo", "mwlist"/*, "mwgamerule"*/};
-	private final MultiWorld plugin;
-	
-	public boolean autoLoadWorlds;
-	public boolean overrideDefaultWorlds;
-	
-	public WorldManager(MultiWorld multiWorld) {
-		this.plugin = multiWorld;
-	}
+    public final String[] commands = { "createworld", "deleteworld", "generateworld",
+            "unloadworld", "worldinfo", "listworlds", "gamerule", "worldproperty" };
 
-	public void loadWorldConfig() {
-		Bukkit.getLogger().info("WorldManager: Loading World Configuration");
-		List<String> worldList = plugin.getConfig().getStringList("world.worlds");
-		//Gson gson = new Gson();
-		
-		/* TODO
-		 * Add a check to make sure all currently loaded worlds are in the plugins world list
-		 * before the below code is run
-		 */
-		
-		for(File file : Bukkit.getWorldContainer().listFiles()){
-			skipWorld:
-			if(isWorldFolder(file)){
-				Bukkit.getLogger().info("WorldManager: Found world " + file.getName());
-				if(autoLoadWorlds){
-					if(worldList.contains(file.getName())){ // If pending world is in list then skip loading it
-						Bukkit.getLogger().info("WorldManager: World is listed in config; Skipping world " + file.getName());
-						break skipWorld;
-					}
-					Bukkit.createWorld(new WorldCreator(file.getName()));
-				} else {
-					// Only load world if in worldList
-					if(worldList.contains(file.getName())){
-						Bukkit.getLogger().info("WorldManager: World is listed in config; Loading world " + file.getName());
-						Bukkit.createWorld(new WorldCreator(file.getName()));
-					}	
-				}	
-			}
-		}
-		
-/*		if(file.isDirectory() && file.getName().contentEquals(conf)){
-			
-			if(!autoLoadWorlds){
-				for(File confFile : file.listFiles()){
-					if(confFile.getName().equalsIgnoreCase("level.dat") && confFile.isFile()){
-						String worldConfStr = CommonLogic.loadJsonAsString(confFile);
-						BukkitWorld newWorld = gson.fromJson(worldConfStr, BukkitWorld.class);
-						worlds.createWorld(newWorld);
-						worlds.loadWorldToMemory(newWorld.getUUID());
-					}
-				}
-			}
-		}
-		
-		for(String conf : worldList){
+    private final MultiWorld plugin;
 
-		}*/
-		Bukkit.getLogger().info("WorldManager: Finished Loading Configuration");
-	}
+    public boolean autoLoadWorlds;
 
-	public void saveWorldConfig(){
-		Bukkit.getLogger().info("WorldManager: Saving World Configuration");
-		//ArrayList<String> worldUUID = new ArrayList<String>();
-		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		
-/*		for(File file : Bukkit.getWorldContainer().listFiles()){
-			if(isWorldFolder(file)){
-				World Bukkit.getWorld(file.getName());
-			}
-		}
-		
-		for(World world : Bukkit.getWorlds()){
-			worldUUID.add(world.getName());
-			File worldFolder = world.getWorldFolder();
-			File worldConfFile = new File(worldFolder, "worldConf.json");
-			BukkitWorld worldConf = generateConfigForWorld(world);
-			CommonLogic.saveJsonAsFile(worldConfFile, gson.toJson(worldConf));
-		}*/
-		//plugin.getConfig().set("world.worlds", worldUUID);
-		Bukkit.getLogger().info("WorldManager: Finished Saving Configuration");
- 	}
+    public WorldManager(MultiWorld multiWorld) {
+        plugin = multiWorld;
+    }
 
-	public static BukkitWorld generateConfigForWorld(World world) {
-		// TODO: Make sure this includes all the world properties
-		BukkitWorld config = new BukkitWorld();
-		config.setEnablePVP(world.getPVP());
-		config.setWorldName(world.getName());
-		config.setAllowAnimalSpawns(world.getAllowAnimals());
-		config.setAllowMonsterSpawns(world.getAllowMonsters());
-		config.setDifficulty(world.getDifficulty());
-		config.setEnviroment(world.getEnvironment());
-		config.setGenerateStructures(world.canGenerateStructures());
-		config.parseGamerules(world.getGameRules(), world);
-		config.setGenerator(world.getGenerator());
-		config.setSeed(world.getSeed());
-		config.setKeepSpawnLoaded(world.getKeepSpawnInMemory());
-		config.setType(world.getWorldType());
-		config.setAutosave(world.isAutoSave());
-		config.setSpawnX(world.getSpawnLocation().getBlockX());
-		config.setSpawnY(world.getSpawnLocation().getBlockY());
-		config.setSpawnZ(world.getSpawnLocation().getBlockZ());
-		config.setUUID(world.getUID());
-		return config;
-	}
+    public String[] asStringArray(World world) {
+        // TODO: Add more color
+        return new String[] { "---- Info For [" + world.getName() + "] ----",
+                "UUID: " + world.getUID().toString(), "Difficulty: " + world.getDifficulty(),
+                "Enviroment: " + world.getEnvironment(),
+                "Allow Monster Spawns: " + world.getAllowMonsters(),
+                "Allow Animal Spawns: " + world.getAllowAnimals(),
+                "Keep Spawn Loaded: " + world.getKeepSpawnInMemory(),
+                "Type: " + world.getWorldType(), "Seed: " + world.getSeed(),
+                "Generate Structures: " + world.canGenerateStructures(),
+                "PVP Enabled: " + world.getPVP(), "Generator: " + "null",
+                "Autosave Enabled: " + world.isAutoSave(),
+                "Spawn Location: " + world.getSpawnLocation(), "Gamerules: " + world.getGameRules() };
+    }
 
-	public static void updateConfigForWorld(World theWorld, BukkitWorld world){
-		theWorld.setPVP(world.isEnablePVP());
-		theWorld.setSpawnFlags(world.isAllowMonsterSpawns(), world.isAllowAnimalSpawns());
-		theWorld.setDifficulty(world.getDifficulty());
-		theWorld.setKeepSpawnInMemory(world.isKeepSpawnLoaded());
-		theWorld.setAutoSave(world.isAutosave());
-		theWorld.setSpawnLocation(world.getSpawnX(), world.getSpawnY(), world.getSpawnZ());
-		
-		for(String key : world.getGamerules().keySet()){
-			theWorld.setGameRuleValue(key, world.getGamerules().get(key));
-		}
-	}
-	
-	private boolean isWorldFolder(File theFile){
-		if(theFile != null){
-			if(theFile.isDirectory()){
-				for(File file : theFile.listFiles()){
-					if(file.getName().equalsIgnoreCase("level.dat")){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	// Command Parsing Logic
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		switch (cmd.getName()) {
-		case "mwcreate":
-			return createCommand(sender, cmd, label, args);
-/*		case "mwdelete":
-			return deleteWorldAndData(sender, cmd, label, args);*/
-		case "mwunload":
-			return unloadWorldCommand(sender, cmd, label, args);
-		case "mwload":
-			return loadWorldCommand(sender, cmd, label, args);
-		case "mwinfo":
-			return infoCommand(sender, cmd, label, args);
-/*		case "mwgamerule":
-			return gameruleCommand(sender, cmd, label, args);*/
-		case "mwlist":
-			return worldListCommand(sender, cmd, label, args);
-		default:
-			sender.sendMessage("Command Error in WorldManager Class!!");
-			return false;
-		}
-	}
-	
-	// Event Handlers
+    private boolean createWorldCommand(CommandSender sender, Command cmd, String label,
+            String[] args) {
+        if (args.length >= 5) {
+            World world = Bukkit.getWorld(args[0]);
+            loop: if (world == null) {
+                for (File file : Bukkit.getWorldContainer().listFiles()) {
+                    if (isWorldFolder(file)) {
+                        if (file.getName().equals(args[0])) {
+                            break loop;
+                        }
+                    }
+                }
 
-	
-	//TODO: Check when a player changes world or goes to spawn that the spawn point is safe
-	
-	// World Related Commands
-	//TODO: Unify the command messages to look and feel the same
-/*	private boolean deleteWorldAndData(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Add a confirmation message
-		if(args.length < 1){
-			return false;
-		}
-		World world = Bukkit.getWorld(args[0]);
-		if(world == null){
-			sender.sendMessage("That world doesn't exist");
-			return false;
-		}
+                String worldName = args[0];
+                long seed = new Random().nextLong();
+                try {
+                    seed = Long.valueOf(args[1]);
+                } catch (Exception e) {
+                }
 
-		boolean var = worlds.deleteWorld(world.getUID(), true);
-		if(var != true){
-			Bukkit.getLogger().warning("Failed to delete world folder");
-			sender.sendMessage("Failed to delete the world folder");
-			sender.sendMessage("The world data and config may be in an incomplete state if it still exists");
-		}
-		return true;
-	}*/
+                WorldType type = WorldType.NORMAL;
+                try {
+                    type = WorldType.valueOf(args[2].toUpperCase());
+                } catch (Exception e) {
+                }
 
-/*	private boolean gameruleCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if(!(args.length >= 2)){
-			return false;
-		}
-		
-		if(args[0].equalsIgnoreCase("get")){
-			if(args.length < 3){
-				if(sender instanceof Player){
-					Player player = (Player) sender;
-					for(String str : player.getWorld().getGameRules()){
-						if(str.equalsIgnoreCase(args[1])){
-							sender.sendMessage("Gamerule " + ChatColor.GREEN + str + ChatColor.WHITE + " has value " + ( Boolean.valueOf(player.getWorld().getGameRuleValue(str)) ? ChatColor.GREEN : ChatColor.RED) + player.getWorld().getGameRuleValue(str));
-							return true;
-						}
-					}
-				} else {
-					World world;
-					if((world = Bukkit.getWorld(args[1])) != null){
-						for(String str : world.getGameRules()){
-							if(str.equalsIgnoreCase(args[2])){
-								sender.sendMessage("Gamerule " + ChatColor.GREEN + str + ChatColor.WHITE + " has value " + ( Boolean.valueOf(world.getGameRuleValue(str)) ? ChatColor.GREEN : ChatColor.RED) + world.getGameRuleValue(str));
-								return true;
-							}
-						}
-					}
-				}
-			}
-		} else if(args[0].equalsIgnoreCase("set")){
-			//TODO: Fill me in
-			sender.sendMessage("Well, I would change the gamerule for you except for one little bity problem...");
-			sender.sendMessage("I kinda, sorta, don't really know how to do that.");
-			sender.sendMessage("However, you can change the gamerule in the worlds config file");
-			
-		}
-		return false;
-	}*/
+                Environment env = Environment.NORMAL;
+                try {
+                    env = Environment.valueOf(args[3].toUpperCase());
+                } catch (Exception e) {
+                }
+                boolean generateStructures = Boolean.valueOf(args[4]);
 
-	private boolean infoCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if(args.length >= 1){
-			World world = Bukkit.getWorld(args[0]);
-			if(world == null){
-				sender.sendMessage("That world doesn't exist!");
-				return true;
-			}
-			sender.sendMessage(WorldManager.generateConfigForWorld(world).asStringArray());
-		}
-		
-		if(!(sender instanceof Player)){
-			sender.sendMessage("You must provide a world name");
-			return false;
-		}
-		
-		Player player = (Player) sender;
-		player.sendMessage(WorldManager.generateConfigForWorld(player.getWorld()).asStringArray());
-		return true;
-	}
+                WorldCreator creator = new WorldCreator(worldName);
+                creator.seed(seed);
+                creator.type(type);
+                creator.environment(env);
+                creator.generateStructures(generateStructures);
 
-	private boolean unloadWorldCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		//TODO: Check if there are players in the world
-		if(args.length != 1){
-			sender.sendMessage("Argument count is incorrect; expected 1 got " + args.length);
-			return false;
-		}
-		World world = Bukkit.getWorld(args[0]);
-		if(world != null){
-			sender.sendMessage("Unloading world " + args[0]);
-			boolean var = Bukkit.unloadWorld(args[0], true);
-			if(var){
-				sender.sendMessage("Unloaded world");
-			} else {
-				sender.sendMessage("Failed to unload world");
-			}
-			return var;			
-		}
-		return false;
-	}
-	
-	private boolean loadWorldCommand(CommandSender sender, Command cmd, String label, String[] args){
-		return createCommand(sender, cmd, label, args);
-	}
+                sender.sendMessage("Generating world");
+                creator.createWorld();
+                Bukkit.getLogger().info("Generator String: " + creator.generatorSettings());
+                sender.sendMessage("Done generating world");
+                return true;
+            }
+            sender.sendMessage(ChatColor.RED + "That world already exists");
+        }
+        return false;
+    }
 
-	private boolean createCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		//TODO: Add safety checks
-		if(args.length < 1){
-			sender.sendMessage("Missing World Name");
-			return false;
-		}
-		
-		BukkitWorld conf = new BukkitWorld();
-		conf.setWorldName(args[0]);
-		//sender.sendMessage("Begining world creation");
-		for(int index = 1; index < args.length; index++){ // start at index 1 so as to skip parsing the world name
-			if(args[index].startsWith("-s")){
-				try {
-					conf.setSeed(Long.parseLong(args[index].substring(2)));
-				} catch (NumberFormatException e){
-					//TODO: Generate a new random seed
-				}
-			} else if(args[index].startsWith("-t")){
-				try {
-					conf.setType(WorldType.valueOf(args[index].toUpperCase().substring(2)));
-				} catch (IllegalArgumentException e){
-					conf.setType(null); // Makes the world generator use default type
-				}
-			} else if(args[index].startsWith("-e")){
-				try {
-					conf.setEnviroment(World.Environment.valueOf(args[index].toUpperCase().substring(2)));
-				} catch (IllegalArgumentException e){
-					conf.setEnviroment(World.Environment.NORMAL); // Makes the world generator use default enviroment
-				}
-			} else if(args[index].startsWith("-b")){
-				conf.setGenerateStructures(Boolean.parseBoolean(args[index].toUpperCase().substring(2)));
-			} else if(args[index].startsWith("-g")){
-				//This is the generator option
-				//TODO: Implement this
-			}
-		}
-		if(Bukkit.createWorld(conf.getWorldCreator()) != null){
-			sender.sendMessage("Done with world creation");
-			return true;
-		}
-		return false;
-	}
-	
-	private boolean worldListCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		for(World world : Bukkit.getWorlds()){
-			sender.sendMessage(world.getName() + " - " + CommonLogic.printEnvColor(world.getEnvironment()) + world.getEnvironment());
-		}
-		return true;
-	}
+    private boolean deleteWorldCommand(CommandSender sender, Command cmd, String label,
+            String[] args) {
+        if (args.length > 0) {
+            for (File file : Bukkit.getWorldContainer().listFiles()) {
+                if (isWorldFolder(file)) {
+                    if (file.getName().equals(args[0])) {
+                        // is the world currently loaded
+                        World world = Bukkit.getWorld(args[0]);
+                        boolean result = true;
+                        if (world != null) {
+                            result = unloadWorldCommand(sender, cmd, label, args);
+                        }
+                        if (result) {
+                            try {
+                                CommonLogic.dirDelete(file);
+                                return true;
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                                return false;
+                            }
+                        }
+                        sender.sendMessage(ChatColor.RED
+                                + "An error occured when attempting to unload the world");
+                        return false;
+                    }
+                }
+            }
+        }
+        sender.sendMessage(ChatColor.RED + "You must provide a world name");
+        return false;
+
+    }
+
+    private boolean gameruleCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        Gamerule prop;
+        World world = null;
+        String newValue = "imp0sibl3$tring";
+        int inc = 0;
+
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "You must provide a gamerule");
+            return false;
+        }
+
+        world = Bukkit.getWorld(args[0]);
+        if (world != null) {
+            inc++;
+        }
+
+        if (isGamerule(args[0 + inc])) {
+            prop = Gamerule.valueOf(args[0 + inc]);
+            if (args.length == 2 + inc) {
+                // Now we know we are setting the property
+                newValue = args[1 + inc]; // Zero index means that 3rd arg is index 2
+            }
+
+            if (world == null) {
+                if (sender instanceof Player) {
+                    world = ((Player) sender).getWorld();
+                } else {
+                    sender.sendMessage(ChatColor.RED + "You must provide a world name");
+                    return false;
+                }
+            }
+
+            if (newValue.equals("imp0sibl3$tring")) {
+                sender.sendMessage("Gamerule " + prop + " has value "
+                        + prop.getPropertyValue(world));
+                return true;
+            } else {
+                boolean bool = prop.setPropertyValue(world, newValue);
+                if (bool) {
+                    sender.sendMessage("Gamerule updated successfully");
+                }
+                return bool;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean generateWorldCommand(CommandSender sender, Command cmd, String label,
+            String[] args) {
+        if (args.length >= 2) {
+            World world = Bukkit.getWorld(args[0]);
+            loop: if (world == null) {
+                for (File file : Bukkit.getWorldContainer().listFiles()) {
+                    if (isWorldFolder(file)) {
+                        if (file.getName().equals(args[0])) {
+                            break loop;
+                        }
+                    }
+                }
+                sender.sendMessage("Generating world");
+                WorldCreator creator = new WorldCreator(args[0]);
+                creator.generator(args[1], sender).createWorld();
+                sender.sendMessage("Done generating world");
+                return true;
+            }
+            sender.sendMessage(ChatColor.RED + "That world already exists");
+            return false;
+        }
+        return false;
+    }
+
+    private boolean isGamerule(String string) {
+        try {
+            Gamerule.valueOf(string);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    private Location isLocationSafe(Location loc) {
+        // TODO: Make this more persistent is finding a safe spawn
+        int blockInc = 0;
+        while (loc.getWorld().getMaxHeight() > blockInc) {
+            Block block = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + blockInc,
+                                                    loc.getBlockZ());
+            if (block.getLightFromSky() > 0) {
+                // We may have found a safe spawn location
+                if (block.getType() == Material.AIR || block.getType() == Material.WATER) {
+                    Block block2 = loc.getWorld().getBlockAt(loc.getBlockX(),
+                                                             loc.getBlockY() + blockInc + 1,
+                                                             loc.getBlockZ());
+                    if (block2.getType() == Material.AIR || block2.getType() == Material.WATER) {
+                        return block.getLocation();
+                    }
+                }
+            }
+            blockInc++;
+        }
+        return null;
+    }
+
+    private boolean isWorldFolder(File theFile) {
+        if (theFile != null) {
+            if (theFile.isDirectory()) {
+                for (File file : theFile.listFiles()) {
+                    if (file.getName().equalsIgnoreCase("level.dat")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isWorldProperty(String string) {
+        try {
+            WorldProperty.valueOf(string);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    public void loadWorldConfig() {
+        Bukkit.getLogger().info("[MultiWorld] Loading World Configuration");
+        List<String> worldList = plugin.getConfig().getStringList("world.worlds");
+
+        for (File file : Bukkit.getWorldContainer().listFiles()) {
+            skipWorld: if (isWorldFolder(file)) {
+                Bukkit.getLogger().info("[MultiWorld] Found world " + file.getName());
+                if (autoLoadWorlds) {
+                    if (worldList.contains(file.getName())) { // If pending world is in list then
+                                                              // skip loading it
+                        Bukkit.getLogger()
+                                .info("[MultiWorld] World is listed in config; Skipping world "
+                                              + file.getName());
+                        break skipWorld;
+                    }
+                    Bukkit.createWorld(new WorldCreator(file.getName()));
+                } else {
+                    // Only load world if in worldList
+                    if (worldList.contains(file.getName())) {
+                        Bukkit.getLogger()
+                                .info("[MultiWorld] World is listed in config; Loading world "
+                                              + file.getName());
+                        Bukkit.createWorld(new WorldCreator(file.getName()));
+                    }
+                }
+            }
+        }
+        Bukkit.getLogger().info("[MultiWorld] Finished Loading Configuration");
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        switch (cmd.getName()) {
+        case "createworld":
+            return createWorldCommand(sender, cmd, label, args);
+        case "deleteworld":
+            return deleteWorldCommand(sender, cmd, label, args);
+        case "generateworld":
+            return generateWorldCommand(sender, cmd, label, args);
+        case "unloadworld":
+            return unloadWorldCommand(sender, cmd, label, args);
+        case "worldinfo":
+            return worldInfoCommand(sender, cmd, label, args);
+        case "listworlds":
+            return worldListCommand(sender, cmd, label, args);
+        case "gamerule":
+            return gameruleCommand(sender, cmd, label, args);
+        case "worldproperty":
+            return worldPropertyCommand(sender, cmd, label, args);
+        default:
+            sender.sendMessage(ChatColor.RED + "Command Error in " + this.getClass().getName());
+            return false;
+        }
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent evt) {
+        // TODO: Make this more persistent in finding a safe spawn location
+        if (!evt.isBedSpawn()) {
+            Location loc = isLocationSafe(evt.getRespawnLocation());
+            if (loc != null) {
+                evt.setRespawnLocation(loc);
+            } else {
+                evt.getPlayer()
+                        .sendMessage(ChatColor.RED
+                                             + "Warning: Unable to find safe spawn location. You may spawn in a block");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onWorldInit(WorldInitEvent evt) {
+        Location loc = isLocationSafe(evt.getWorld().getSpawnLocation());
+        if (loc != null) {
+            if (!evt.getWorld().getSpawnLocation().equals(loc)) {
+                Bukkit.getLogger().info("Spawn location of " + evt.getWorld().getName()
+                                                + " wasn't safe");
+                Bukkit.getLogger().info("Spawn changed to " + loc);
+                Bukkit.getLogger().info("Spawn location was " + evt.getWorld().getSpawnLocation());
+                evt.getWorld().setSpawnLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            }
+        }
+    }
+
+    public void saveWorldConfig() {
+        Bukkit.getLogger().info("[MultiWorld] Not saving config as there is nothing to save");
+        // Bukkit.getLogger().info("WorldManager: Saving World Configuration");
+        // Bukkit.getLogger().info("WorldManager: Finished Saving Configuration");
+    }
+
+    private boolean unloadWorldCommand(CommandSender sender, Command cmd, String label,
+            String[] args) {
+        if (args.length > 0) {
+            World world = Bukkit.getWorld(args[0]);
+            if (world != null) {
+                if (world.getPlayers().size() > 0) {
+                    sender.sendMessage(ChatColor.RED
+                            + "You can't unload a world with players in it");
+                    return false;
+                }
+                boolean result = Bukkit.unloadWorld(world, true);
+                return result;
+            }
+        }
+        // sender.sendMessage(ChatColor.RED + "You must provide a world name");
+        return false;
+    }
+
+    private boolean worldInfoCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        World world = null;
+        if (args.length > 0) {
+            world = Bukkit.getWorld(args[0]);
+        } else if (sender instanceof Player) {
+            world = ((Player) sender).getWorld();
+        } else {
+            // sender.sendMessage(ChatColor.RED + "You must provide a world name");
+            return false;
+        }
+        sender.sendMessage(asStringArray(world));
+        return true;
+    }
+
+    private boolean worldListCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        for (World world : Bukkit.getWorlds()) {
+            sender.sendMessage(world.getName() + " - "
+                    + CommonLogic.printEnvColor(world.getEnvironment()) + world.getEnvironment());
+        }
+        return true;
+    }
+
+    private boolean worldPropertyCommand(CommandSender sender, Command cmd, String label,
+            String[] args) {
+        WorldProperty prop;
+        World world = null;
+        String newValue = "imp0sibl3$tring";
+        int inc = 0;
+
+        if (args.length < 2) {
+            // sender.sendMessage(ChatColor.RED + "You must provide a world property");
+            return false;
+        }
+
+        world = Bukkit.getWorld(args[0]);
+        if (world != null) {
+            inc++;
+        }
+
+        if (isWorldProperty(args[0 + inc])) {
+            prop = WorldProperty.valueOf(args[0 + inc]);
+            if (args.length == 2 + inc) {
+                // Now we know we are setting the property
+                newValue = args[1 + inc]; // Zero index means that 3rd arg is index 2
+            }
+
+            if (world == null) {
+                if (sender instanceof Player) {
+                    world = ((Player) sender).getWorld();
+                } else {
+                    // sender.sendMessage(ChatColor.RED + "You must provide a world name");
+                    return false;
+                }
+            }
+
+            if (newValue.equals("imp0sibl3$tring")) {
+                sender.sendMessage("Property " + prop + " has value "
+                        + prop.getPropertyValue(world));
+                return true;
+            } else {
+                boolean bool = prop.setPropertyValue(world, newValue);
+                if (bool) {
+                    sender.sendMessage("Property updated successfully");
+                }
+                return bool;
+            }
+        }
+
+        return false;
+    }
 }

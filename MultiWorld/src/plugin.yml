@@ -1,43 +1,46 @@
 name: Multiworld
 main: io.github.robotman3000.bukkit.multiworld.MultiWorld
-version: 0.1.1-SNAPSHOT
+version: 0.1.3-SNAPSHOT
 commands:
-   mwcreate:
-      description: This allows you to create a world but you must load the world with the load command.
-      usage: /<command> <World Name> [-s(seed)] [-t(world type)] [-e(world environment)] [-b(generate structures)] [-g(generator:options)]
+   createworld:
+      description: Creates a world or loads the world if it already exists.
+      usage: /<command> <World Name> <seed> <world type> <world environment> <generate structures>
       permission: multiworld.create
       permission-message: You don't have <permission>
-   mwunload:
-      description: This allows you to unload a world.
-      usage: /<command> <World Name>
-      permission: multiworld.unload
+   generateworld:
+      description: Generate a world.
+      usage: /<command> <World Name> <generator:options>
+      permission: multiworld.generate
       permission-message: You don't have <permission>
-   mwload:
-      description: This allows you to load a world.
-      usage: /<command> <World Name>
-      permission: multiworld.load
-      permission-message: You don't have <permission>
-   mwdelete:
-      description: This allows you to delete a world and all its data.
+   deleteworld:
+      description: Delete a world and all of its data.
       usage: /<command> <World Name>
       permission: multiworld.delete
       permission-message: You don't have <permission>
-   mwinfo:
+   unloadworld:
+      description: Unload a world.
+      usage: /<command> <World Name>
+      permission: multiworld.unload
+      permission-message: You don't have <permission>
+   worldinfo:
       description: This allows you to get info for a world.
       usage: /<command> [World Name]
       permission: multiworld.info
       permission-message: You don't have <permission>
-   mwlist:
+   listworlds:
       description: Lists all loaded worlds on the server.
       usage: /<command>
       permission: multiworld.list
       permission-message: You don't have <permission>
-   mwgamerule:
+   gamerule:
       description: This allows you get and set gamerules.
-      usage: |
-             /<command> <set> <gamerule> <value> [worldname]
-             /<command> <get> <gamerule> [worldname]
+      usage: /<command> [World Name] <gamerule> [new value]
       permission: multiworld.gamerule
+      permission-message: You don't have <permission>
+   worldproperty:
+      description: Get and set the properties of a world.
+      usage: /<command> [World Name] <property> [new value]
+      permission: multiworld.property
       permission-message: You don't have <permission>
    goto:
       description: Teleport to a world.

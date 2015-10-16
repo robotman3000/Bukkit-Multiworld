@@ -7,6 +7,8 @@ import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.md_5.bungee.api.ChatColor;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,11 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MultiWorld extends JavaPlugin implements Listener {
@@ -32,19 +29,16 @@ public class MultiWorld extends JavaPlugin implements Listener {
     private boolean appendWorldInChat;
 
     private boolean gotoCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO: Add safety checks; in paticular check if the world exists before teleporting
-        // TODO: Move this command to teleport manager class
         if (!(args.length >= 1)) {
-            sender.sendMessage("You must provide a world name");
+            sender.sendMessage(ChatColor.RED + "You must provide a world name");
             return false;
         }
         World world = Bukkit.getServer().getWorld(args[0]);
         if (world != null) {
             sender.sendMessage("Teleporting you to world " + args[0]);
             Location loc = world.getSpawnLocation();
-            sender.sendMessage("Activating Teleport");
             if (!(sender instanceof Player) && args.length < 2) {
-                sender.sendMessage("Error; You must be a player to teleport");
+                sender.sendMessage(ChatColor.RED + "You must be a player to teleport");
                 return false;
             }
             Player thePlayer;
@@ -61,18 +55,21 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO: add a command to list all loaded worlds
         switch (cmd.getName()) {
         case "goto":
             return gotoCommand(sender, cmd, label, args);
         default:
-            sender.sendMessage("Nope, I got nothing; Something went very wrong; CMD was: "
-                    + cmd.getName());
+            sender.sendMessage(ChatColor.RED
+                    + "Nope, I got nothing; Something went very wrong; CMD was: " + cmd.getName());
+            if (args.length > 0) {
+                sender.sendMessage(ChatColor.RED + "Command Args are as follows");
+                for (String str : args) {
+                    sender.sendMessage(ChatColor.RED + "Command Arg: " + str);
+                }
+            } else {
+                sender.sendMessage(ChatColor.RED + "There were no arguments");
+            }
             break;
-        }
-        sender.sendMessage("Command Args are as follows");
-        for (String str : args) {
-            sender.sendMessage("Command Arg: " + str);
         }
         return true;
     }
@@ -88,13 +85,10 @@ public class MultiWorld extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         // Reminder: Don't assume that this is only called on a server restart
-        // ConfigurationSerialization.registerClass(PlayerState.class);
         ConfigurationSerialization.registerClass(BukkitInventory.class);
-
         saveDefaultConfig();
 
-        /*			
-        		this.getConfig().get("multiworld.enableTeleportManagement");
+        /*	    this.getConfig().get("multiworld.enableTeleportManagement");
         		this.getConfig().get("teleport.handleNetherPortals");
         		this.getConfig().get("teleport.handleEndPortals");
         		this.getConfig().get("teleport.enablePortalDestOverride");
@@ -106,15 +100,15 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // World Manager
         if (getConfig().getBoolean("multiworld.enableWorldManagement")) {
-            Bukkit.getLogger().info("Initializing World Manager");
+            Bukkit.getLogger().info("[MultiWorld] Initializing World Manager");
             for (String str : worlds.commands) { // Register Commands
-                Bukkit.getLogger().info("Registering World Manager Command: " + str);
+                Bukkit.getLogger().info("[MultiWorld] Registering World Manager Command: " + str);
                 getCommand(str).setExecutor(worlds);
             }
 
             worlds.autoLoadWorlds = getConfig().getBoolean("world.autoLoadWorlds");
 
-            Bukkit.getLogger().info("Registering World Manager Event Handlers");
+            Bukkit.getLogger().info("[MultiWorld] Registering World Manager Event Handlers");
             getServer().getPluginManager().registerEvents(worlds, this); // Register the world event
                                                                          // handlers
             worlds.loadWorldConfig(); // Load the worlds list
@@ -122,9 +116,10 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // Inventory Manager
         if (getConfig().getBoolean("multiworld.enableInventoryManagement")) {
-            Bukkit.getLogger().info("Initializing Inventory Manager");
+            Bukkit.getLogger().info("[MultiWorld] Initializing Inventory Manager");
             for (String str : inventories.commands) {
-                Bukkit.getLogger().info("Registering Inventory Manager Command: " + str);
+                Bukkit.getLogger().info("[MultiWorld] Registering Inventory Manager Command: "
+                                                + str);
                 getCommand(str).setExecutor(inventories);
             }
 
@@ -134,7 +129,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
                     .getBoolean("inventory.seperateGamemodeInventories");
             inventories.forceGamemode = getConfig().getBoolean("inventory.forceGamemode");
 
-            Bukkit.getLogger().info("Registering Inventory Manager Event Handlers");
+            Bukkit.getLogger().info("[MultiWorld] Registering Inventory Manager Event Handlers");
             getServer().getPluginManager().registerEvents(inventories, this); // Register the
                                                                               // inventory event
                                                                               // handlers
@@ -150,13 +145,8 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // Death Messages
 
-    }
+        // Broadcast Messages
 
-    @EventHandler
-    public void onPlayerChangedWorld(PlayerChangedWorldEvent evt) {
-        String name = evt.getFrom().getName();
-        evt.getPlayer().sendMessage("You switched from the world " + name + " to "
-                                            + evt.getPlayer().getWorld().getName());
     }
 
     @EventHandler
@@ -167,41 +157,13 @@ public class MultiWorld extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerGamemodeChanged(PlayerGameModeChangeEvent evt) {
-        evt.getPlayer().sendMessage("You changed your gamemode from "
-                                            + evt.getPlayer().getGameMode() + " to "
-                                            + evt.getNewGameMode());
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent evt) {
-        evt.getPlayer().sendMessage("Welcome to the server");
-    }
-
-    @EventHandler
-    public void onPlayerPortalEvent(PlayerPortalEvent evt) {
-        evt.getPlayer().sendMessage("Portal Event");
-    }
-
-    @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent evt) {
-        evt.getPlayer().sendMessage("You were teleported; the cause was "
-                                            + evt.getCause().toString());
-        evt.getPlayer().sendMessage("Teleported from: " + evt.getFrom() + " to " + evt.getTo());
-    }
-
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        getLogger().warning("Tab complete not implemented yet");
+        getLogger().warning("Tab complete not completely implemented yet");
         ArrayList<String> list = new ArrayList<String>();
-        /*		if(cmd.getName().equalsIgnoreCase("inset")){
-        			for(InventoryConfig inv : inventoryKeeper.inventories){
-        				list.add(inv.getInventoryId());
-        			}
-        			return list;
-        		}*/
-        list.add(sender.getName());
+        for (World world : Bukkit.getWorlds()) {
+            list.add(world.getName());
+        }
         return list;
     }
 }
