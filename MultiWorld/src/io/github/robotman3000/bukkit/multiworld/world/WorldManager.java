@@ -147,6 +147,7 @@ public class WorldManager implements Listener, CommandExecutor {
 
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "You must provide a gamerule");
+            sender.sendMessage(printEnum(Gamerule.values()));
             return false;
         }
 
@@ -183,7 +184,7 @@ public class WorldManager implements Listener, CommandExecutor {
                 return bool;
             }
         }
-
+        sender.sendMessage(printEnum(Gamerule.values()));
         return false;
     }
 
@@ -348,6 +349,15 @@ public class WorldManager implements Listener, CommandExecutor {
         }
     }
 
+    private <T extends Enum<?>> String printEnum(T[] theEnum) {
+        StringBuilder build = new StringBuilder();
+        for (T prop2 : theEnum) {
+            build.append(prop2.toString() + ", ");
+        }
+        build.delete(build.length() - 2, build.length());
+        return build.toString();
+    }
+
     public void saveWorldConfig() {
         Bukkit.getLogger().info("[MultiWorld] Not saving config as there is nothing to save");
         // Bukkit.getLogger().info("WorldManager: Saving World Configuration");
@@ -403,6 +413,7 @@ public class WorldManager implements Listener, CommandExecutor {
 
         if (args.length < 2) {
             // sender.sendMessage(ChatColor.RED + "You must provide a world property");
+            sender.sendMessage(printEnum(WorldProperty.values()));
             return false;
         }
 
@@ -439,7 +450,7 @@ public class WorldManager implements Listener, CommandExecutor {
                 return bool;
             }
         }
-
+        sender.sendMessage(printEnum(WorldProperty.values()));
         return false;
     }
 }
