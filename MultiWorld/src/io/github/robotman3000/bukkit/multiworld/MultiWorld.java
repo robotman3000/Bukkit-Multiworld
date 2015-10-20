@@ -1,5 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld;
 
+import io.github.robotman3000.bukkit.multiworld.gamemode.GamemodeManager;
 import io.github.robotman3000.bukkit.multiworld.inventory.BukkitInventory;
 import io.github.robotman3000.bukkit.multiworld.inventory.InventoryManager;
 import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
@@ -25,6 +26,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
     WorldManager worlds = new WorldManager(this);
     InventoryManager inventories = new InventoryManager(this);
+    GamemodeManager gamemodes = new GamemodeManager(this);
 
     private boolean appendWorldInChat;
 
@@ -79,6 +81,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
         // Reminder: Don't assume that this is only called on a server restart
         worlds.saveWorldConfig();
         inventories.saveInventoryConfig();
+        gamemodes.saveGamemodeConfig();
         saveConfig();
     }
 
@@ -127,7 +130,6 @@ public class MultiWorld extends JavaPlugin implements Listener {
             inventories.teleportOnSwich = getConfig().getBoolean("inventory.teleportOnSwitch");
             inventories.seperateGamemodeInventories = getConfig()
                     .getBoolean("inventory.seperateGamemodeInventories");
-            inventories.forceGamemode = getConfig().getBoolean("inventory.forceGamemode");
 
             Bukkit.getLogger().info("[MultiWorld] Registering Inventory Manager Event Handlers");
             getServer().getPluginManager().registerEvents(inventories, this); // Register the
@@ -141,11 +143,19 @@ public class MultiWorld extends JavaPlugin implements Listener {
         // Chat Manager
         // This allows basic chat management and chat formating
 
-        // Permissions System
+        // Gamemode Manager
+        if (getConfig().getBoolean("multiworld.enableGamemodeManagement")) {
+            Bukkit.getLogger().info("[MultiWorld] Initializing Gamemode Manager");
+            Bukkit.getLogger().info("[MultiWorld] Registering Gamemode Manager Event Handlers");
+            getServer().getPluginManager().registerEvents(gamemodes, this); // handlers
+            gamemodes.loadGamemodeConfig();
+        }
 
         // Death Messages
 
         // Broadcast Messages
+
+        // Player Spawn Manager
 
     }
 

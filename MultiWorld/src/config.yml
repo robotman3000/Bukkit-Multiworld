@@ -26,11 +26,14 @@ inventory:
   forceGamemode: false
   groups:
     default:
-      gamemode: CREATIVE
       worlds:
       - world_the_end
       - world_nether
     group2:
-      gamemode: SURVIVAL
       worlds:
       - world
+gamemode:
+  SURVIVAL:
+  - world
+  - world_nether
+  - world_the_end

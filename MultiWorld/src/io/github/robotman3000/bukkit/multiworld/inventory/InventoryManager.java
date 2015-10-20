@@ -13,7 +13,6 @@ import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,32 +36,9 @@ public class InventoryManager implements CommandExecutor, Listener {
     public boolean seperateGamemodeInventories;
     public boolean teleportOnSwich; // TODO: Add this feature; Implement it the same way as
                                     // forceGamemode is done
-    public boolean forceGamemode;
 
     public InventoryManager(MultiWorld multiWorld) {
         plugin = multiWorld;
-    }
-
-    private void forceGamemode(InventoryKey key, Player player) {
-        if (forceGamemode) {
-            GameMode gamemode = getGamemodeForWorld(player.getWorld());
-            if (!gamemode.equals(key.getGamemodeKey())) {
-                player.setGameMode(gamemode);
-            }
-        }
-    }
-
-    private GameMode getGamemodeForGroup(String groupName) {
-        WorldGroup gamemode = worldGroups.get(groupName);
-        if (gamemode != null) {
-            return gamemode.getGamemode();
-        }
-        return Bukkit.getDefaultGameMode();
-    }
-
-    private GameMode getGamemodeForWorld(World world) {
-        String worldGroup = getGroupForWorld(world.getName());
-        return getGamemodeForGroup(worldGroup);
     }
 
     private String getGroupForWorld(String world) {
@@ -137,7 +113,6 @@ public class InventoryManager implements CommandExecutor, Listener {
         }
     }
 
-    // Command Logic
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         switch (cmd.getName()) {
@@ -159,7 +134,6 @@ public class InventoryManager implements CommandExecutor, Listener {
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
                         .getGameMode().toString(), null);
         swapInventory(beforeState, afterState, evt.getPlayer(), null);
-        forceGamemode(afterState, evt.getPlayer());
     }
 
     @EventHandler
@@ -179,10 +153,8 @@ public class InventoryManager implements CommandExecutor, Listener {
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
                         .getGameMode().toString(), null);
         swapInventory(playerState, playerState, evt.getPlayer(), Boolean.TRUE);
-        forceGamemode(playerState, evt.getPlayer());
     }
 
-    // Event Handlers
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent evt) {
         InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
@@ -201,7 +173,6 @@ public class InventoryManager implements CommandExecutor, Listener {
             String path = "inventory.groups." + groupkey;
             WorldGroup group = worldGroups.get(groupkey);
             plugin.getConfig().createSection(path);
-            plugin.getConfig().set(path + ".gamemode", group.getGamemode().toString());
             plugin.getConfig().set(path + ".worlds", group.getWorlds());
 
             knownWorlds.addAll(group.getWorlds());
@@ -233,13 +204,19 @@ public class InventoryManager implements CommandExecutor, Listener {
 
     private void swapInventory(InventoryKey beforeState, InventoryKey afterState, Player player,
             Boolean registerOnly) {
+        Bukkit.getLogger().info("Swapping Inventory");
         // If registerOnly is null it means not applicable
         // Be careful about which PlayerState to use because it matters
         InventoryKey updatedState = getNewInventoryKey(beforeState, afterState, player);
+        if (beforeState.equals(updatedState)) {
+            Bukkit.getLogger().info("No swap needed");
+            return;
+        }
         String message = "InventoryManager: Your inventory failed to be ";
         InventoryResult result = InventoryResult.FAILED;
 
         if (registerOnly == null || registerOnly == Boolean.FALSE) {
+            Bukkit.getLogger().info("Unreg Inventory");
             result = invs.unregisterInventory(beforeState, updatedState, player);
 
             if (result == InventoryResult.FAILED) {
@@ -253,6 +230,7 @@ public class InventoryManager implements CommandExecutor, Listener {
 
         invs.checkInventoryForEvent(updatedState, player);
         if (registerOnly == null || registerOnly == Boolean.TRUE) {
+            Bukkit.getLogger().info("Reg Inventory");
             result = invs.registerInventory(beforeState, updatedState, player);
             if (result == InventoryResult.FAILED) {
                 player.kickPlayer(message + "registered");

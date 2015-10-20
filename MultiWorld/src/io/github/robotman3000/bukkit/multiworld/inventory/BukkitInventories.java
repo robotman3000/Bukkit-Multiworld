@@ -208,6 +208,8 @@ public class BukkitInventories {
 
     protected InventoryResult registerInventory(InventoryKey beforeState, InventoryKey afterState,
             Player player) {
+        Bukkit.getLogger().info("Key Before: " + beforeState);
+        Bukkit.getLogger().info("Key After: " + afterState);
         for (InventoryKey key : unregisteredInventories) {
             if (key.equals(afterState)) {
                 boolean var1 = unregisteredInventories.remove(key);
@@ -263,6 +265,8 @@ public class BukkitInventories {
 
     protected InventoryResult unregisterInventory(InventoryKey beforeState,
             InventoryKey afterState, Player player) {
+        Bukkit.getLogger().info("Key Before: " + beforeState);
+        Bukkit.getLogger().info("Key After: " + afterState);
         for (InventoryKey key : registeredInventories) {
             if (key.equals(beforeState)) {
                 boolean var1 = registeredInventories.remove(key);
