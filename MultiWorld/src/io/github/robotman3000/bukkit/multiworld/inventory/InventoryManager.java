@@ -1,7 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
 import io.github.robotman3000.bukkit.multiworld.MultiWorld;
-import io.github.robotman3000.bukkit.multiworld.inventory.BukkitInventories.InventoryResult;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,8 +82,7 @@ public class InventoryManager implements CommandExecutor, Listener {
             for (String str : worldGroups.keySet()) {
                 WorldGroup group = worldGroups.get(str);
                 sender.sendMessage("World Group (" + str + "): " + ChatColor.BLUE + group.getName()
-                        + " " + ChatColor.GREEN + group.getWorlds() + " " + ChatColor.YELLOW
-                        + group.getGamemode());
+                        + " " + ChatColor.GREEN + group.getWorlds());
             }
         }
         return true;
@@ -133,7 +131,7 @@ public class InventoryManager implements CommandExecutor, Listener {
         InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
                         .getGameMode().toString(), null);
-        swapInventory(beforeState, afterState, evt.getPlayer(), null);
+        swapInventory(beforeState, afterState, evt.getPlayer());
     }
 
     @EventHandler
@@ -144,7 +142,7 @@ public class InventoryManager implements CommandExecutor, Listener {
         InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getNewGameMode()
                         .toString(), null);
-        swapInventory(beforeState, afterState, evt.getPlayer(), null);
+        swapInventory(beforeState, afterState, evt.getPlayer());
     }
 
     @EventHandler
@@ -152,7 +150,7 @@ public class InventoryManager implements CommandExecutor, Listener {
         InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
                         .getGameMode().toString(), null);
-        swapInventory(playerState, playerState, evt.getPlayer(), Boolean.TRUE);
+        swapInventory(playerState, playerState, evt.getPlayer());
     }
 
     @EventHandler
@@ -160,12 +158,11 @@ public class InventoryManager implements CommandExecutor, Listener {
         InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
                 getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
                         .getGameMode().toString(), null);
-        swapInventory(playerState, playerState, evt.getPlayer(), Boolean.FALSE);
+        swapInventory(playerState, playerState, evt.getPlayer());
     }
 
     public void saveInventoryConfig() {
         invs.saveInventoryConfig(plugin);
-
         // Save the world groups and gamemode settings
         HashSet<String> knownWorlds = new HashSet<>();
         // HashSet<String> unconfiguredWorlds = new HashSet<>();
@@ -177,64 +174,12 @@ public class InventoryManager implements CommandExecutor, Listener {
 
             knownWorlds.addAll(group.getWorlds());
         }
-        /*		for(World world : Bukkit.getWorlds()){
-        	if(!knownWorlds.contains(world.getName())){
-        		unconfiguredWorlds.add(world.getName());
-        	}
-        }
-        if(unconfiguredWorlds.size() > 0){ // if we need a default section this will be greater than zero
-        	Bukkit.getLogger().warning("InventoryManager: Auto adding worlds with no explicitly assigned group to default");
-        	String path = "inventory.groups.default";
-        	if(!plugin.getConfig().contains(path)){
-        		// If it doesn't exist than make it exist
-        		plugin.getConfig().createSection(path);
-        		plugin.getConfig().set(path + ".gamemode", Bukkit.getDefaultGameMode().toString());
-        	}
-
-        	List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
-        	for(String str : unconfiguredWorlds){
-        		if(!worlds.contains(str)){
-        			worlds.add(str);
-        		}
-        	}
-        	plugin.getConfig().set(path + ".worlds", worlds);
-        }*/
-
     }
 
-    private void swapInventory(InventoryKey beforeState, InventoryKey afterState, Player player,
-            Boolean registerOnly) {
+    private void swapInventory(InventoryKey beforeState, InventoryKey afterState, Player player) {
         Bukkit.getLogger().info("Swapping Inventory");
-        // If registerOnly is null it means not applicable
-        // Be careful about which PlayerState to use because it matters
+        // Be careful about which PlayerState we use because it does matter
         InventoryKey updatedState = getNewInventoryKey(beforeState, afterState, player);
-        if (beforeState.equals(updatedState)) {
-            Bukkit.getLogger().info("No swap needed");
-            return;
-        }
-        String message = "InventoryManager: Your inventory failed to be ";
-        InventoryResult result = InventoryResult.FAILED;
-
-        if (registerOnly == null || registerOnly == Boolean.FALSE) {
-            Bukkit.getLogger().info("Unreg Inventory");
-            result = invs.unregisterInventory(beforeState, updatedState, player);
-
-            if (result == InventoryResult.FAILED) {
-                player.kickPlayer(message + "unregistered");
-            }
-
-            if (registerOnly == Boolean.FALSE) {
-                return;
-            }
-        }
-
-        invs.checkInventoryForEvent(updatedState, player);
-        if (registerOnly == null || registerOnly == Boolean.TRUE) {
-            Bukkit.getLogger().info("Reg Inventory");
-            result = invs.registerInventory(beforeState, updatedState, player);
-            if (result == InventoryResult.FAILED) {
-                player.kickPlayer(message + "registered");
-            }
-        }
+        invs.updatePlayerFromKeys(beforeState, updatedState, player);
     }
 }

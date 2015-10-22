@@ -14,7 +14,17 @@ public class InventoryKey {
 
     public InventoryKey(String playerKey, String worldKey, String gamemodeKey,
             BukkitInventory inventory) {
-        this.playerKey = UUID.fromString(playerKey);
+        this(UUID.fromString(playerKey), worldKey, gamemodeKey, inventory);
+    }
+
+    public InventoryKey(UUID playerKey, String worldKey, GameMode gamemodeKey,
+            BukkitInventory inventory) {
+        this(playerKey, worldKey, gamemodeKey.name(), inventory);
+    }
+
+    public InventoryKey(UUID playerKey, String worldKey, String gamemodeKey,
+            BukkitInventory inventory) {
+        this.playerKey = playerKey;
         theInv = inventory;
         this.worldKey = worldKey;
         GameMode gamemode = Bukkit.getDefaultGameMode();
@@ -33,20 +43,13 @@ public class InventoryKey {
         if (obj instanceof InventoryKey) {
             // Bukkit.getLogger().warning("It is a InventoryKey");
             InventoryKey key = (InventoryKey) obj;
-            boolean var1 = false, var2 = false, var3 = false;
             if (gamemodeKey.equals(key.gamemodeKey)) {
-                // Bukkit.getLogger().warning("Gamemode Matched");
-                var1 = true;
+                if (playerKey.equals(key.playerKey)) {
+                    if (worldKey.equals(key.worldKey)) {
+                        return true;
+                    }
+                }
             }
-            if (playerKey.equals(key.playerKey)) {
-                // Bukkit.getLogger().warning("Player Matched");
-                var2 = true;
-            }
-            if (worldKey.equals(key.worldKey)) {
-                // Bukkit.getLogger().warning("World matched");
-                var3 = true;
-            }
-            return (var1 && var2 && var3);
         }
         return false;
     }
@@ -67,19 +70,9 @@ public class InventoryKey {
         return worldKey;
     }
 
-    /*    public boolean playerStateMatches(PlayerState playerState) {
-            if (gamemodeKey.equals(playerState.getGamemode())
-                    && playerKey.equals(playerState.getPlayer().getUniqueId())
-                    && worldKey.equals(playerState.getWorld().getName())) {
-                return true;
-            }
-            return false;
-        }*/
-
     @Override
     public String toString() {
         return "InventoryKey [playerKey=" + playerKey + ", worldKey=" + worldKey + ", gamemodeKey="
                 + gamemodeKey + "]";
     }
-
 }
