@@ -103,15 +103,15 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // World Manager
         if (getConfig().getBoolean("multiworld.enableWorldManagement")) {
-            Bukkit.getLogger().info("[MultiWorld] Initializing World Manager");
+            Bukkit.getLogger().info("[SpigotPlus] Initializing World Manager");
             for (String str : worlds.commands) { // Register Commands
-                Bukkit.getLogger().info("[MultiWorld] Registering World Manager Command: " + str);
+                Bukkit.getLogger().info("[SpigotPlus] Registering World Manager Command: " + str);
                 getCommand(str).setExecutor(worlds);
             }
 
             worlds.autoLoadWorlds = getConfig().getBoolean("world.autoLoadWorlds");
 
-            Bukkit.getLogger().info("[MultiWorld] Registering World Manager Event Handlers");
+            Bukkit.getLogger().info("[SpigotPlus] Registering World Manager Event Handlers");
             getServer().getPluginManager().registerEvents(worlds, this); // Register the world event
                                                                          // handlers
             worlds.loadWorldConfig(); // Load the worlds list
@@ -119,9 +119,9 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // Inventory Manager
         if (getConfig().getBoolean("multiworld.enableInventoryManagement")) {
-            Bukkit.getLogger().info("[MultiWorld] Initializing Inventory Manager");
+            Bukkit.getLogger().info("[SpigotPlus] Initializing Inventory Manager");
             for (String str : inventories.commands) {
-                Bukkit.getLogger().info("[MultiWorld] Registering Inventory Manager Command: "
+                Bukkit.getLogger().info("[SpigotPlus] Registering Inventory Manager Command: "
                                                 + str);
                 getCommand(str).setExecutor(inventories);
             }
@@ -131,7 +131,7 @@ public class MultiWorld extends JavaPlugin implements Listener {
             inventories.seperateGamemodeInventories = getConfig()
                     .getBoolean("inventory.seperateGamemodeInventories");
 
-            Bukkit.getLogger().info("[MultiWorld] Registering Inventory Manager Event Handlers");
+            Bukkit.getLogger().info("[SpigotPlus] Registering Inventory Manager Event Handlers");
             getServer().getPluginManager().registerEvents(inventories, this); // Register the
                                                                               // inventory event
                                                                               // handlers
@@ -145,8 +145,8 @@ public class MultiWorld extends JavaPlugin implements Listener {
 
         // Gamemode Manager
         if (getConfig().getBoolean("multiworld.enableGamemodeManagement")) {
-            Bukkit.getLogger().info("[MultiWorld] Initializing Gamemode Manager");
-            Bukkit.getLogger().info("[MultiWorld] Registering Gamemode Manager Event Handlers");
+            Bukkit.getLogger().info("[SpigotPlus] Initializing Gamemode Manager");
+            Bukkit.getLogger().info("[SpigotPlus] Registering Gamemode Manager Event Handlers");
             getServer().getPluginManager().registerEvents(gamemodes, this); // handlers
             gamemodes.loadGamemodeConfig();
         }

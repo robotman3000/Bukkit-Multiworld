@@ -266,17 +266,17 @@ public class WorldManager implements Listener, CommandExecutor {
     }
 
     public void loadWorldConfig() {
-        Bukkit.getLogger().info("[MultiWorld] Loading World Configuration");
+        Bukkit.getLogger().info("[SpigotPlus] Loading World Configuration");
         List<String> worldList = plugin.getConfig().getStringList("world.worlds");
 
         for (File file : Bukkit.getWorldContainer().listFiles()) {
             skipWorld: if (isWorldFolder(file)) {
-                Bukkit.getLogger().info("[MultiWorld] Found world " + file.getName());
+                Bukkit.getLogger().info("[SpigotPlus] Found world " + file.getName());
                 if (autoLoadWorlds) {
                     if (worldList.contains(file.getName())) { // If pending world is in list then
                                                               // skip loading it
                         Bukkit.getLogger()
-                                .info("[MultiWorld] World is listed in config; Skipping world "
+                                .info("[SpigotPlus] World is listed in config; Skipping world "
                                               + file.getName());
                         break skipWorld;
                     }
@@ -285,14 +285,14 @@ public class WorldManager implements Listener, CommandExecutor {
                     // Only load world if in worldList
                     if (worldList.contains(file.getName())) {
                         Bukkit.getLogger()
-                                .info("[MultiWorld] World is listed in config; Loading world "
+                                .info("[SpigotPlus] World is listed in config; Loading world "
                                               + file.getName());
                         Bukkit.createWorld(new WorldCreator(file.getName()));
                     }
                 }
             }
         }
-        Bukkit.getLogger().info("[MultiWorld] Finished Loading Configuration");
+        Bukkit.getLogger().info("[SpigotPlus] Finished Loading Configuration");
     }
 
     @Override
@@ -359,7 +359,7 @@ public class WorldManager implements Listener, CommandExecutor {
     }
 
     public void saveWorldConfig() {
-        Bukkit.getLogger().info("[MultiWorld] Not saving config as there is nothing to save");
+        Bukkit.getLogger().info("[SpigotPlus] Not saving config as there is nothing to save");
         // Bukkit.getLogger().info("WorldManager: Saving World Configuration");
         // Bukkit.getLogger().info("WorldManager: Finished Saving Configuration");
     }

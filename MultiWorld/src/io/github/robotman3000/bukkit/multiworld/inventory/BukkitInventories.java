@@ -186,14 +186,14 @@ public class BukkitInventories {
             Player player) {
 
         if (!playerInventories.contains(beforeState)) {
-            Bukkit.getLogger().warning("[MultiWorld] Creating \"before\" inventory for "
+            Bukkit.getLogger().warning("[SpigotPlus] Creating \"before\" inventory for "
                                                + player.getName());
             playerInventories
                     .add(new InventoryKey(beforeState.getPlayerKey(), beforeState.getWorldKey(),
                             beforeState.getGamemodeKey(), new BukkitInventory(player, true)));
         }
         if (!playerInventories.contains(afterState)) {
-            Bukkit.getLogger().warning("[MultiWorld] Creating \"after\" inventory for "
+            Bukkit.getLogger().warning("[SpigotPlus] Creating \"after\" inventory for "
                                                + player.getName());
             playerInventories
                     .add(new InventoryKey(afterState.getPlayerKey(), afterState.getWorldKey(),
@@ -225,11 +225,11 @@ public class BukkitInventories {
         }
 
         player.kickPlayer("InventoryManager: Your inventories have somehow become nonexistant. I blame the creepers.. er, the zombies.. er, both of them!");
-        Bukkit.getLogger().severe("[MultiWorld] What?!? The inventories of " + player.getName()
+        Bukkit.getLogger().severe("[SpigotPlus] What?!? The inventories of " + player.getName()
                                           + " have ceased to exist; Perhaps they never were?");
-        Bukkit.getLogger().severe("[MultiWorld] " + player.getName() + " before inventory: "
+        Bukkit.getLogger().severe("[SpigotPlus] " + player.getName() + " before inventory: "
                                           + beforeKey);
-        Bukkit.getLogger().severe("[MultiWorld] " + player.getName() + " after inventory: "
+        Bukkit.getLogger().severe("[SpigotPlus] " + player.getName() + " after inventory: "
                                           + afterKey);
         return false;
     }

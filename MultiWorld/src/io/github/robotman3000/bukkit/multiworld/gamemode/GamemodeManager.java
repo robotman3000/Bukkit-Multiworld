@@ -48,7 +48,7 @@ public class GamemodeManager implements Listener, CommandExecutor {
                 for (String str : list) {
                     GameMode game = gamemodes.put(str, gamemode);
                     if (game != null) {
-                        Bukkit.getLogger().warning("[MultiWorld] The world " + str
+                        Bukkit.getLogger().warning("[SpigotPlus] The world " + str
                                                            + " already had the gamemode " + game
                                                            + " assigned. It has been overwriten");
                     }
@@ -84,7 +84,7 @@ public class GamemodeManager implements Listener, CommandExecutor {
             if (gamemode == null) {
                 gamemode = Bukkit.getDefaultGameMode();
                 Bukkit.getLogger()
-                        .info("[MultiWorld] The world "
+                        .info("[SpigotPlus] The world "
                                       + world.getName()
                                       + " was not defined in the config. Defining it with gamemode "
                                       + gamemode.name());
