@@ -14,8 +14,8 @@ build:
         name: Java Version (Used to Debug Java Fails)
         code: java -version
     - script:
-        name: Removing AutoCRLF and Compiling BuildTools to Latest Version
-        code: git config --global --unset core.autocrlf && java -jar BuildTools.jar --rev latest
+        name: Compiling BuildTools to Latest Version
+        code: java -jar BuildTools.jar --rev latest
     - script:
         name: CD and Making META-INF Directory
         code: cd ../MultiWorld/src/ && mkdir META-INF
