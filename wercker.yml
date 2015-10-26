@@ -18,7 +18,8 @@ build:
         code: cd ../MultiWorld/src/ && mkdir META-INF
     - script:
         name: Outputting MANIFEST.MF.hex
-        code: echo "Invalid Manifest Text" > MANIFEST.MF.hex
+        code: echo "0000000\\C\\ 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version
+0000010\\C\\ 3a20 312e 300d 0a0d 0a                   \\C\\ 1.0...." > MANIFEST.MF.hex
     - script:
         name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
         code: xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
@@ -27,7 +28,7 @@ build:
         code: /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
     - script:
         name: Packaging plugin source code and binaries into Jar file
-        code: /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/jar cf SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar .
+        code: /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/jar cf SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version\\C\\ //').jar .
 
 deploy:
   #steps: #steps is to deploy when a branch that does not exist is called. 
@@ -40,13 +41,13 @@ deploy:
         code: export TIME=$(date +%s)
     - script:
         name: Versioning
-        code: export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')
+        code: export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version\\C\\ //')
     - github-create-release:
         token: $GITHUB_TOKEN
         tag: v$(echo $APP_VERSION)-nightly$(echo $TIME)
     - github-upload-asset:
         token: $GITHUB_TOKEN
-        file: MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar
+        file: MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version\\C\\ //').jar
         release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
 
   # notify slack on successful or failed deploys
