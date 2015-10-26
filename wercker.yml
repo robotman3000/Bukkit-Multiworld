@@ -18,7 +18,7 @@ build:
         code: java -jar BuildTools.jar --rev latest
     - script:
         name: CD and Making META-INF Directory
-        code: cd ../MultiWorld/src/ && mkdir META-INF
+        code: cd MultiWorld/src/ && mkdir META-INF
     - script:
         name: Outputting MANIFEST.MF.hex
         code: "echo -e \"0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version\n0000010: 3a20 312e 300d 0a0d 0a                   : 1.0....\" > MANIFEST.MF.hex"
@@ -57,7 +57,7 @@ deploy:
         code: export TIME=$(date +%s)
     - script:
         name: Adding Nightly to Build
-        code: "mv MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar "MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')-nightly$(echo $TIME).jar""
+        code: "mv MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')-nightly$(echo $TIME).jar"
     - script:
         name: Versioning
         code: "export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')"
