@@ -2,11 +2,11 @@ box: debian
 build:
   steps:
     - script:
+        name: List All Files (Debug Purposes)
+        code: find
+    - script:
         name: Install Tools
         code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless openjdk-7-jdk tar git curl && rm -rf /var/lib/apt/lists/*
-    - script:
-        name: Making and CD to BuildTools Directory
-        code: mkdir BuildTools && cd BuildTools
     - script:
         name: Downloading BuildTools.jar
         code: curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -36,10 +36,13 @@ build:
         code: find
     - script:
         name: Compiling .java files to .class files
-        code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
+        code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../Spigot/Spigot-API/target/spigot-api-*-shaded.jar
     - script:
         name: Packaging plugin source code and binaries into Jar file
         code: "cd MultiWorld/src/ && jar cf SpigotPlus-$(cat plugin.yml | grep version | sed 's/version: //').jar ."
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
 
 deploy:
   #steps: #steps is to deploy when a branch that does not exist is called.
@@ -50,6 +53,9 @@ deploy:
     - script:
         name: Versioning
         code: "export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')"
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
     - github-create-release:
         token: $GITHUB_TOKEN
         tag: v$(echo $APP_VERSION)
@@ -70,6 +76,9 @@ deploy:
     - script:
         name: Versioning
         code: "export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')"
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
     - github-create-release:
         token: $GITHUB_TOKEN
         tag: v$(echo $APP_VERSION)-nightly$(echo $TIME)
