@@ -14,6 +14,9 @@ build:
         name: Java Version (Used to Debug Java Fails)
         code: java -version
     - script:
+        name: Java Location
+        code: which java
+    - script:
         name: CD and Making META-INF Directory (Reoccuring CD Due to Steps Resetting Back to Root)
         code: cd MultiWorld/src/ && mkdir META-INF
     - script:
