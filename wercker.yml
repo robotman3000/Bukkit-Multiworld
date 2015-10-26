@@ -1,0 +1,59 @@
+box: debian
+build:
+  steps:
+    - script:
+        name: Install Tools
+        code: apt-get install git openjdk-7-jre-headless tar git curl
+    - script:
+        name: Making and CD to BuildTools Directory
+        code: mkdir BuildTools && cd BuildTools
+    - script:
+        name: Downloading BuildTools.jar
+        code: curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    - script:
+        name: Removing AutoCRLF and Compiling BuildTools to Latest Version
+        code: git config --global --unset core.autocrlf && /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/java -jar BuildTools.jar --rev latest
+    - script:
+        name: CD and Making META-INF Directory
+        code: cd ../MultiWorld/src/ && mkdir META-INF
+    - script:
+        name: Outputting MANIFEST.MF.hex
+        code: echo "0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version
+0000010: 3a20 312e 300d 0a0d 0a                   : 1.0...." > MANIFEST.MF.hex
+    - script:
+        name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
+        code: xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
+    - script:
+        name: Compiling .java files to .class files
+        code: /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
+    - script:
+        name: Packaging plugin source code and binaries into Jar file
+        code: /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/jar cf SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar .
+
+deploy:
+  #steps: #steps is to deploy when a branch that does not exist is called. 
+  nightly:
+    - script:
+        name: Install Tools
+        code: apt-get update && apt-get install -y curl file zip && rm -rf /var/lib/apt/lists/*
+    - script:
+        name: Date Time Variable
+        code: export TIME=$(date +%s)
+    - script:
+        name: Versioning
+        code: export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')
+    - github-create-release:
+        token: $GITHUB_TOKEN
+        tag: v$(echo $APP_VERSION)-nightly$(echo $TIME)
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar
+        release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
+
+  # notify slack on successful or failed deploys
+  after-steps:
+    - slack-notifier:
+        url: $SLACK_URL
+        channel: wercker
+        username: werckerbot
+        branch: nightly
