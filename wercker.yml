@@ -28,9 +28,7 @@ build:
     - script:
         name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
         code: cd MultiWorld/src/ && xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
-    - script:
-        name: Compiling BuildTools to Latest Version
-        code: java -jar BuildTools.jar --rev latest
+
     - script:
         name: Compiling .java files to .class files
         code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
