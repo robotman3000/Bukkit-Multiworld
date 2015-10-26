@@ -6,7 +6,7 @@ build:
         code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless openjdk-7-jdk tar git curl && rm -rf /var/lib/apt/lists/*
     - script:
         name: Making and CD to BuildTools Directory
-        code: mkdir BuildTools && cd BuildTools
+        code: cd BuildTools
     - script:
         name: Downloading BuildTools.jar
         code: curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -28,9 +28,6 @@ build:
     - script:
         name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
         code: cd MultiWorld/src/ && xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
-    - script:
-        name: Compiling BuildTools to Latest Version
-        code: java -jar BuildTools.jar --rev latest
     - script:
         name: Compiling .java files to .class files
         code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
