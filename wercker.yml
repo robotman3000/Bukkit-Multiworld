@@ -11,6 +11,9 @@ build:
         name: Downloading BuildTools.jar
         code: curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
     - script:
+        name: Java Version
+        code: java -version
+    - script:
         name: Removing AutoCRLF and Compiling BuildTools to Latest Version
         code: git config --global --unset core.autocrlf && /usr/lib/jvm/java-1.7.0-openjdk-i386/bin/java -jar BuildTools.jar --rev latest
     - script:
