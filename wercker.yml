@@ -32,6 +32,9 @@ build:
         name: Compiling BuildTools to Latest Version
         code: java -jar BuildTools.jar --rev latest
     - script:
+        name: Display All Files in Project (Debug Step)
+        code: find
+    - script:
         name: Compiling .java files to .class files
         code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
     - script:
