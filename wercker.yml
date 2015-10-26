@@ -3,7 +3,7 @@ build:
   steps:
     - script:
         name: Install Tools
-        code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless tar git curl && rm -rf /var/lib/apt/lists/*
+        code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless openjdk-7-jdk tar git curl && rm -rf /var/lib/apt/lists/*
     - script:
         name: Making and CD to BuildTools Directory
         code: mkdir BuildTools && cd BuildTools
