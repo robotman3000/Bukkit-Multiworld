@@ -3,7 +3,7 @@ build:
   steps:
     - script:
         name: Install Tools
-        code: apt-get update && apt-get install -y vim-common git openjdk-7-jre-headless tar git curl && rm -rf /var/lib/apt/lists/*
+        code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless tar git curl && rm -rf /var/lib/apt/lists/*
     - script:
         name: Making and CD to BuildTools Directory
         code: mkdir BuildTools && cd BuildTools
@@ -30,10 +30,10 @@ build:
         code: java -jar BuildTools.jar --rev latest
     - script:
         name: Compiling .java files to .class files
-        code: javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
+        code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
     - script:
         name: Packaging plugin source code and binaries into Jar file
-        code: "jar cf SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar ."
+        code: "cd MultiWorld/src/ && jar cf SpigotPlus-$(cat plugin.yml | grep version | sed 's/version: //').jar ."
 
 deploy:
   #steps: #steps is to deploy when a branch that does not exist is called.
