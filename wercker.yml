@@ -3,7 +3,7 @@ build:
   steps:
     - script:
         name: Install Tools
-        code: apt-get install git openjdk-7-jre-headless tar git curl
+        code: apt-get update && apt-get install git openjdk-7-jre-headless tar git curl && rm -rf /var/lib/apt/lists/*
     - script:
         name: Making and CD to BuildTools Directory
         code: mkdir BuildTools && cd BuildTools
@@ -18,7 +18,7 @@ build:
         code: cd ../MultiWorld/src/ && mkdir META-INF
     - script:
         name: Outputting MANIFEST.MF.hex
-        code: echo "Invalid Manifest" > MANIFEST.MF.hex
+        code: echo -e "0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version\n0000010: 3a20 312e 300d 0a0d 0a                   : 1.0...." > MANIFEST.MF.hex
     - script:
         name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
         code: xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
