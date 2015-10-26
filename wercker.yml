@@ -17,17 +17,20 @@ build:
         name: Compiling BuildTools to Latest Version
         code: java -jar BuildTools.jar --rev latest
     - script:
-        name: CD and Making META-INF Directory
+        name: CD and Making META-INF Directory (Reoccuring CD Due to Steps Resetting Back to Root)
         code: cd MultiWorld/src/ && mkdir META-INF
     - script:
         name: Outputting MANIFEST.MF.hex
-        code: "echo -e \"0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version\n0000010: 3a20 312e 300d 0a0d 0a                   : 1.0....\" > MANIFEST.MF.hex"
+        code: "cd MultiWorld/src/ && echo -e \"0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version\n0000010: 3a20 312e 300d 0a0d 0a                   : 1.0....\" > MANIFEST.MF.hex"
     - script:
         name: List Directories (Debug Purposes)
-        code: ls && ls META-INF
+        code: cd MultiWorld/src/ && ls && ls META-INF
     - script:
         name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
-        code: xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
+        code: cd MultiWorld/src/ && xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
+    - script:
+        name: Compiling BuildTools to Latest Version
+        code: java -jar BuildTools.jar --rev latest
     - script:
         name: Compiling .java files to .class files
         code: javac $(find | grep .java) -classpath ../../BuildTools/Spigot/Spigot-API/target/spigot-api-*-shaded.jar
