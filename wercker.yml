@@ -91,6 +91,4 @@ deploy:
   after-steps:
     - slack-notifier:
         url: $SLACK_URL
-        channel: wercker
         username: werckerbot
-        branch: nightly
