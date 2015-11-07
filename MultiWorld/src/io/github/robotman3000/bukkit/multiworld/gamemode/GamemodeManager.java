@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerEvent;
@@ -29,14 +30,18 @@ public class GamemodeManager implements Listener, CommandExecutor {
     }
 
     private void forceGamemode(PlayerEvent evt) {
-        Bukkit.getLogger().info("Forcing Gamemode");
+        Bukkit.getLogger().info("[SpigotPlus] Forcing Gamemode");
         if (!evt.getPlayer().hasPermission("multiworld.gamemodeExempt")) {
-            Bukkit.getLogger().info("Player Not Exempt");
+            Bukkit.getLogger().info("[SpigotPlus] Player Not Exempt");
             GameMode gamemode = gamemodes.get(evt.getPlayer().getWorld().getName());
             if (gamemode == null) {
                 gamemode = Bukkit.getDefaultGameMode();
             }
-            evt.getPlayer().setGameMode(gamemode);
+            if (!evt.getPlayer().getGameMode().equals(gamemode)) {
+                evt.getPlayer().setGameMode(gamemode);
+            } else {
+                Bukkit.getLogger().info("[SpigotPlus] No gamemode change needed");
+            }
         }
     }
 
@@ -63,12 +68,12 @@ public class GamemodeManager implements Listener, CommandExecutor {
         return true;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent evt) {
         forceGamemode(evt);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent evt) {
         forceGamemode(evt);
     }

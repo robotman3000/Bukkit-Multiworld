@@ -11,12 +11,11 @@ import java.util.Set;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
@@ -27,7 +26,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class InventoryManager implements CommandExecutor, Listener {
     // TODO: make this private
     public final String[] commands = { "inlist" };
-    private final BukkitInventories invs = new BukkitInventories();
+    private final InventoryContainer invs = new InventoryContainer();
     private final MultiWorld plugin;
 
     private final Map<String, WorldGroup> worldGroups = new HashMap<>();
@@ -40,38 +39,14 @@ public class InventoryManager implements CommandExecutor, Listener {
         plugin = multiWorld;
     }
 
-    private String getGroupForWorld(String world) {
-        for (String str : worldGroups.keySet()) {
-            WorldGroup group = worldGroups.get(str);
-            if (group.getWorlds().contains(world)) {
-                return "group_" + str;
+    private String getGroupName(String name) {
+        for (String worldGroupName : worldGroups.keySet()) {
+            WorldGroup worldGroup = worldGroups.get(worldGroupName);
+            if (worldGroup.getWorlds().contains(name)) {
+                return "group_" + worldGroupName;
             }
         }
-        return world;
-    }
-
-    private InventoryKey getNewInventoryKey(InventoryKey beforeState, InventoryKey afterState,
-            Player player) {
-        InventoryKey updatedState = new InventoryKey(player.getUniqueId().toString(),
-                afterState.getWorldKey(), afterState.getGamemodeKey().toString(), null);
-        if (!seperateGamemodeInventories) {
-            // We hardcode survival mode so that the matching inventory will be consistent whenever
-            // the gamemode doesn't matter
-            updatedState = new InventoryKey(updatedState.getPlayerKey().toString(),
-                    updatedState.getWorldKey(), GameMode.SURVIVAL.toString(), null);
-        }
-
-        String beforeWorldGroup = getGroupForWorld(beforeState.getWorldKey());
-        String afterWorldGroup = getGroupForWorld(afterState.getWorldKey());
-        if (beforeWorldGroup.equalsIgnoreCase(afterWorldGroup)) {
-            // Bukkit.getLogger().info("World Groups Matched!!");
-            // WorldGroup group = worldGroups.get(afterWorldGroup);
-
-            String gamemode = updatedState.getGamemodeKey().toString();
-            String gplayer = updatedState.getPlayerKey().toString();
-            updatedState = new InventoryKey(gplayer, afterWorldGroup, gamemode, null);
-        }
-        return updatedState;
+        return name;
     }
 
     private boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -98,15 +73,8 @@ public class InventoryManager implements CommandExecutor, Listener {
             String path = "inventory.groups." + groupKey;
             List<String> worlds = plugin.getConfig().getStringList(path + ".worlds");
             Bukkit.getLogger().warning("Worlds " + path + " " + worlds);
-            String gamemodeStr = plugin.getConfig().getString(path + ".gamemode");
-            Bukkit.getLogger().warning(gamemodeStr);
-            GameMode gamemode = Bukkit.getDefaultGameMode();
-            try {
-                gamemode = GameMode.valueOf(gamemodeStr);
-            } catch (Exception e) {
-            }
 
-            WorldGroup wGroup = new WorldGroup(groupKey, gamemode, worlds);
+            WorldGroup wGroup = new WorldGroup(groupKey, worlds);
             worldGroups.put(groupKey, wGroup);
         }
     }
@@ -123,42 +91,144 @@ public class InventoryManager implements CommandExecutor, Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent evt) {
-        InventoryKey beforeState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getFrom().getName()),
-                evt.getPlayer().getGameMode().toString(), null);
-        InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
-                        .getGameMode().toString(), null);
-        swapInventory(beforeState, afterState, evt.getPlayer());
+        InventoryKey beforeKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getFrom().getName()), evt.getPlayer().getGameMode());
+        InventoryKey afterKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getPlayer().getWorld().getName()), evt.getPlayer().getGameMode());
+
+        if (!beforeKey.equals(afterKey)) { // If the keys don't match, which means that a change is
+                                           // actually required, then continue
+            if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+                if (!invs.hasUsedInventory(beforeKey)) {
+                    Bukkit.getLogger()
+                            .info("[SpigotPlus] World: Creating an inventory with the key: "
+                                          + beforeKey
+                                          + " (What?? How does the players current inventory not exist?)");
+                    invs.resetInventory(beforeKey);
+                }
+
+                if (!invs.hasUnusedInventory(afterKey)) {
+                    Bukkit.getLogger()
+                            .info("[SpigotPlus] World: Creating an inventory with the key: "
+                                          + afterKey);
+                    invs.resetInventory(afterKey);
+                }
+
+                // Bukkit.getLogger().info("[SpigotPlus] World: Unregistering Inventory");
+                invs.unregisterInventory(beforeKey);
+                if (invs.checkSanityForPlayer(evt.getPlayer(), 0)) {
+                    InventoryContainer.zeroPlayerInventory(evt.getPlayer(),
+                                                           afterKey.getGamemodeKey());
+                    invs.registerInventory(afterKey);
+                    // Bukkit.getLogger().info("[SpigotPlus] World: So far so good...");
+                    if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+                        // Bukkit.getLogger().info("[SpigotPlus] World: Success!!");
+                        return;
+                    }
+                }
+            }
+            Bukkit.getLogger().severe("[SpigotPlus] World: Failed to register inventory for "
+                                              + evt.getPlayer().getName());
+        } else {
+            Bukkit.getLogger().info("[SpigotPlus] World: No change needed");
+        }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerGamemodeChanged(PlayerGameModeChangeEvent evt) {
-        InventoryKey beforeState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
-                        .getGameMode().toString(), null);
-        InventoryKey afterState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getNewGameMode()
-                        .toString(), null);
-        swapInventory(beforeState, afterState, evt.getPlayer());
+        InventoryKey beforeKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getPlayer().getWorld().getName()), evt.getPlayer().getGameMode());
+        InventoryKey afterKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getPlayer().getWorld().getName()), evt.getNewGameMode());
+
+        if (!beforeKey.equals(afterKey)) {
+            if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+                if (!invs.hasUsedInventory(beforeKey)) {
+                    Bukkit.getLogger()
+                            .info("[SpigotPlus] Gamemode: Creating an inventory with the key: "
+                                          + beforeKey
+                                          + " (What?? How does the players current inventory not exist?)");
+                    invs.resetInventory(beforeKey);
+                }
+
+                if (!invs.hasUnusedInventory(afterKey)) {
+                    Bukkit.getLogger()
+                            .info("[SpigotPlus] Gamemode: Creating an inventory with the key: "
+                                          + afterKey);
+                    invs.resetInventory(afterKey);
+                }
+
+                // Bukkit.getLogger().info("[SpigotPlus] Gamemode: Unregistering Inventory");
+                invs.unregisterInventory(beforeKey);
+                if (invs.checkSanityForPlayer(evt.getPlayer(), 0)) {
+                    InventoryContainer.zeroPlayerInventory(evt.getPlayer(),
+                                                           afterKey.getGamemodeKey());
+                    invs.registerInventory(afterKey);
+                    // Bukkit.getLogger().info("[SpigotPlus] Gamemode: So far so good...");
+                    if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+                        // Bukkit.getLogger().info("[SpigotPlus] Success!!");
+                        return;
+                    }
+                }
+            }
+            Bukkit.getLogger().severe("[SpigotPlus] Gamemode: Failed to register inventory for "
+                                              + evt.getPlayer().getName());
+        } else {
+            Bukkit.getLogger().info("[SpigotPlus] Gamemode: No change needed");
+        }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent evt) {
-        InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
-                        .getGameMode().toString(), null);
-        swapInventory(playerState, playerState, evt.getPlayer());
+        InventoryKey theKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getPlayer().getWorld().getName()), evt.getPlayer().getGameMode());
+
+        if (invs.checkSanityForPlayer(evt.getPlayer(), 0)) {
+            if (!invs.hasUnusedInventory(theKey)) {
+                Bukkit.getLogger().info("[SpigotPlus] Join: Creating an inventory with the key: "
+                                                + theKey);
+                invs.resetInventory(theKey);
+            }
+
+            InventoryContainer.zeroPlayerInventory(evt.getPlayer(), theKey.getGamemodeKey());
+            invs.registerInventory(theKey);
+            // Bukkit.getLogger().info("[SpigotPlus] Join: So far so good...");
+            if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+                // Bukkit.getLogger().info("[SpigotPlus] Success!!");
+                // We're done. Exit immediately.
+                return;
+            }
+        }
+        Bukkit.getLogger().severe("[SpigotPlus] Join: Failed to register inventory for "
+                                          + evt.getPlayer().getName());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerLeave(PlayerQuitEvent evt) {
-        InventoryKey playerState = new InventoryKey(evt.getPlayer().getUniqueId().toString(),
-                getGroupForWorld(evt.getPlayer().getWorld().getName()), evt.getPlayer()
-                        .getGameMode().toString(), null);
-        swapInventory(playerState, playerState, evt.getPlayer());
+        InventoryKey theKey = new InventoryKey(evt.getPlayer().getUniqueId(), getGroupName(evt
+                .getPlayer().getWorld().getName()), evt.getPlayer().getGameMode());
+
+        if (invs.checkSanityForPlayer(evt.getPlayer(), 1)) {
+            if (!invs.hasUsedInventory(theKey)) {
+                Bukkit.getLogger()
+                        .info("[SpigotPlus] Leave: Creating an inventory with the key: "
+                                      + theKey
+                                      + " (What?? Why did I have to create this inventory during an unregister?)");
+                invs.resetInventory(theKey);
+            }
+
+            invs.unregisterInventory(theKey);
+            InventoryContainer.zeroPlayerInventory(evt.getPlayer(), theKey.getGamemodeKey());
+            // Bukkit.getLogger().info("[SpigotPlus] Leave: So far so good...");
+            if (invs.checkSanityForPlayer(evt.getPlayer(), 0)) {
+                // Bukkit.getLogger().info("[SpigotPlus] Success!!");
+                return;
+            }
+        }
+        Bukkit.getLogger().severe("[SpigotPlus] Leave: Failed to register inventory for "
+                                          + evt.getPlayer().getName());
     }
 
     public void saveInventoryConfig() {
@@ -176,10 +246,4 @@ public class InventoryManager implements CommandExecutor, Listener {
         }
     }
 
-    private void swapInventory(InventoryKey beforeState, InventoryKey afterState, Player player) {
-        Bukkit.getLogger().info("Swapping Inventory");
-        // Be careful about which PlayerState we use because it does matter
-        InventoryKey updatedState = getNewInventoryKey(beforeState, afterState, player);
-        invs.updatePlayerFromKeys(beforeState, updatedState, player);
-    }
 }
