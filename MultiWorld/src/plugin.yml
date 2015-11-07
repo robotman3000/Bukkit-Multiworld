@@ -1,6 +1,6 @@
 name: Multiworld
 main: io.github.robotman3000.bukkit.multiworld.MultiWorld
-version: 0.1.5-SNAPSHOT
+version: 0.1.8-SNAPSHOT
 commands:
    createworld:
       description: Creates a world or loads the world if it already exists.
