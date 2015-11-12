@@ -48,3 +48,8 @@ Server scheduler
 - Player playtime limit
 Broadcast Messages
 - Supports Message Scheduling
+The Toybox
+- Diamond raffle
+- World with admin commands
+  - All items in a spawn to give yourself. Fight. /kill usable every 2 minutes. /tp every 30 seconds.
+- Vanilla Minimap
