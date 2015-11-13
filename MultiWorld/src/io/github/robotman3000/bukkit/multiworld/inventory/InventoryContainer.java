@@ -1,6 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
-import io.github.robotman3000.bukkit.multiworld.MultiWorld;
+import io.github.robotman3000.bukkit.multiworld.SpigotPlus;
 
 import java.io.File;
 import java.io.IOException;
@@ -169,7 +169,7 @@ public class InventoryContainer {
         return true;
     }
 
-    protected synchronized void readInventoryConfig(MultiWorld plugin) {
+    protected synchronized void readInventoryConfig(SpigotPlus plugin, InventoryManager theSuper) {
         File inventoryFolder = new File(plugin.getDataFolder(), "inventories");
         inventoryFolder.mkdirs();
 
@@ -209,69 +209,69 @@ public class InventoryContainer {
     public synchronized void registerInventory(InventoryKey theKey) {
         Player player = Bukkit.getPlayer(theKey.getPlayerKey());
         if (player != null) {
-            Bukkit.getLogger().info("[SpigotPlus] Reg: Player is good");
-            // Bukkit.getLogger().info("[SpigotPlus] Reg: usedInvs: " + usedInventories);
-            // Bukkit.getLogger().info("[SpigotPlus] Reg: unusedInvs: " + unusedInventories);
-            // Bukkit.getLogger().info("[SpigotPlus] Reg: Key: " + theKey);
+            // logInfo.info("[SpigotPlus] Reg: Player is good");
+            // logInfo.info("[SpigotPlus] Reg: usedInvs: " + usedInventories);
+            // logInfo.info("[SpigotPlus] Reg: unusedInvs: " + unusedInventories);
+            // logInfo.info("[SpigotPlus] Reg: Key: " + theKey);
             InventoryContainer.bool = false;
-            // Bukkit.getLogger().info("[SpigotPlus] Reg: <" + Thread.currentThread().getName()
+            // logInfo.info("[SpigotPlus] Reg: <" + Thread.currentThread().getName()
             // + "> Bool1: " + InventoryContainer.bool);
 
             BukkitInventory newInv = unusedInventories.get(theKey);
             if (newInv != null) {
-                Bukkit.getLogger().info("[SpigotPlus] Reg: Inventory is good");
+                // logInfo.info("[SpigotPlus] Reg: Inventory is good");
                 InventoryContainer.updatePlayerInventory(player, newInv);
                 unusedInventories.remove(theKey);
                 usedInventories.put(theKey, newInv);
-                /*                Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: usedInvs: " + usedInventories);
-                                Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: unusedInvs: " + unusedInventories);*/
+                /*                logInfo.info("[SpigotPlus] Reg: Cond: usedInvs: " + usedInventories);
+                                logInfo.info("[SpigotPlus] Reg: Cond: unusedInvs: " + unusedInventories);*/
                 return;
             }
             /*            if (hasUnusedInventory(theKey)) {
-                            Bukkit.getLogger().info("[SpigotPlus] Reg: Inv we want exists");
+                            logInfo.info("[SpigotPlus] Reg: Inv we want exists");
                             for (InventoryKey key : unusedInventories.keySet()) {
                                 if (key.equals(theKey)) {
-                                    Bukkit.getLogger()
+                                    logInfo
                                             .info("[SpigotPlus] Reg: Inv Returned from iterator key: "
                                                           + unusedInventories.get(key));
                                     BukkitInventory newInv = unusedInventories.get(key);
-                                    Bukkit.getLogger().info("[SpigotPlus] Reg: Loc2: usedInvs: "
+                                    logInfo.info("[SpigotPlus] Reg: Loc2: usedInvs: "
                                                                     + usedInventories);
-                                    Bukkit.getLogger().info("[SpigotPlus] Reg: Loc2: unusedInvs: "
+                                    logInfo.info("[SpigotPlus] Reg: Loc2: unusedInvs: "
                                                                     + unusedInventories);
-                                    Bukkit.getLogger().info("[SpigotPlus] Reg: newInv: " + newInv);
+                                    logInfo.info("[SpigotPlus] Reg: newInv: " + newInv);
 
                                     if (newInv != null) {
-                                        Bukkit.getLogger().info("[SpigotPlus] Reg: Inventory is good");
+                                        logInfo.info("[SpigotPlus] Reg: Inventory is good");
                                         InventoryContainer.updatePlayerInventory(player, newInv);
                                         unusedInventories.remove(key);
                                         usedInventories.put(key, newInv);
-                                        Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: usedInvs: "
+                                        logInfo.info("[SpigotPlus] Reg: Cond: usedInvs: "
                                                                         + usedInventories);
-                                        Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: unusedInvs: "
+                                        logInfo.info("[SpigotPlus] Reg: Cond: unusedInvs: "
                                                                         + unusedInventories);
                                         return;
                                     }
                                 }
                             }
                         } else {
-                            Bukkit.getLogger().info("[SpigotPlus] Reg: Inv we want does not exist");
+                            logInfo.info("[SpigotPlus] Reg: Inv we want does not exist");
                         }*/
 
             /*            BukkitInventory newInv = unusedInventories.get(theKey);
-                        Bukkit.getLogger().info("[SpigotPlus] Reg: <" + Thread.currentThread().getName()
+                        logInfo.info("[SpigotPlus] Reg: <" + Thread.currentThread().getName()
                                                         + "> Bool2: " + InventoryContainer.bool);
                         if (newInv != null) {
-                            Bukkit.getLogger().info("[SpigotPlus] Reg: Inventory is good");
+                            logInfo.info("[SpigotPlus] Reg: Inventory is good");
                             InventoryContainer.updatePlayerInventory(player, newInv);
                             unusedInventories.remove(theKey);
                             usedInventories.put(theKey, newInv);
-                            Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: usedInvs: " + usedInventories);
-                            Bukkit.getLogger().info("[SpigotPlus] Reg: Cond: unusedInvs: " + unusedInventories);
+                            logInfo.info("[SpigotPlus] Reg: Cond: usedInvs: " + usedInventories);
+                            logInfo.info("[SpigotPlus] Reg: Cond: unusedInvs: " + unusedInventories);
                             return;
                         }*/
         }
-        Bukkit.getLogger().info("[SpigotPlus] Reg: Inventory register failed");
+        // logInfo.info("[SpigotPlus] Reg: Inventory register failed");
     }
 
     public synchronized void resetInventory(InventoryKey theKey) {
@@ -279,7 +279,8 @@ public class InventoryContainer {
                 true));
     }
 
-    protected synchronized void saveInventoryConfig(MultiWorld plugin) {
+    protected synchronized void saveInventoryConfig(SpigotPlus plugin,
+            InventoryManager inventoryManager) {
 
         // Save the inventory keys
         String invKeyPath = "invKey";
@@ -323,59 +324,59 @@ public class InventoryContainer {
     public synchronized void unregisterInventory(InventoryKey theKey) {
         Player player = Bukkit.getPlayer(theKey.getPlayerKey());
         if (player != null) {
-            Bukkit.getLogger().info("[SpigotPlus] UReg: Player is good");
+            // logInfo("[SpigotPlus] UReg: Player is good");
 
             BukkitInventory newInv = usedInventories.get(theKey);
             if (newInv != null) {
-                Bukkit.getLogger().info("[SpigotPlus] UReg: Inventory is good");
+                // logInfo.info("[SpigotPlus] UReg: Inventory is good");
                 InventoryContainer.updateInventoryContents(player, newInv);
                 usedInventories.remove(theKey);
                 unusedInventories.put(theKey, newInv);
-                /*                Bukkit.getLogger().info("[SpigotPlus] UReg: Cond: usedInvs: "
+                /*                logInfo.info("[SpigotPlus] UReg: Cond: usedInvs: "
                                                                 + usedInventories);
-                                Bukkit.getLogger().info("[SpigotPlus] UReg: Cond: unusedInvs: "
+                                logInfo.info("[SpigotPlus] UReg: Cond: unusedInvs: "
                                                                 + unusedInventories);*/
                 return;
             }
-            /*            Bukkit.getLogger().info("[SpigotPlus] UReg: usedInvs: " + usedInventories);
-                        Bukkit.getLogger().info("[SpigotPlus] UReg: unusedInvs: " + unusedInventories);
-                        Bukkit.getLogger().info("[SpigotPlus] UReg: Key: {" + theKey.hashCode() + "} {"
+            /*            logInfo.info("[SpigotPlus] UReg: usedInvs: " + usedInventories);
+                        logInfo.info("[SpigotPlus] UReg: unusedInvs: " + unusedInventories);
+                        logInfo.info("[SpigotPlus] UReg: Key: {" + theKey.hashCode() + "} {"
                                                         + System.identityHashCode(theKey) + "} " + theKey);
 
                         if (hasUsedInventory(theKey)) {
-                            Bukkit.getLogger().info("[SpigotPlus] UReg: Inv we want exists");
+                            logInfo.info("[SpigotPlus] UReg: Inv we want exists");
                             for (InventoryKey key : usedInventories.keySet()) {
                                 if (key.equals(theKey)) {
-                                    Bukkit.getLogger()
+                                    logInfo
                                             .info("[SpigotPlus] UReg: Inv Returned from iterator key: "
                                                           + usedInventories.get(key));
                                     BukkitInventory newInv = usedInventories.get(key);
-                                    Bukkit.getLogger().info("[SpigotPlus] UReg: Loc2: usedInvs: "
+                                    logInfo.info("[SpigotPlus] UReg: Loc2: usedInvs: "
                                                                     + usedInventories);
-                                    Bukkit.getLogger().info("[SpigotPlus] UReg: Loc2: unusedInvs: "
+                                    logInfo.info("[SpigotPlus] UReg: Loc2: unusedInvs: "
                                                                     + unusedInventories);
-                                    Bukkit.getLogger().info("[SpigotPlus] UReg: newInv: " + newInv);
+                                    logInfo.info("[SpigotPlus] UReg: newInv: " + newInv);
 
                                     if (newInv != null) {
-                                        Bukkit.getLogger().info("[SpigotPlus] UReg: Inventory is good");
+                                        logInfo.info("[SpigotPlus] UReg: Inventory is good");
                                         InventoryContainer.updateInventoryContents(player, newInv);
                                         usedInventories.remove(key);
                                         unusedInventories.put(key, newInv);
-                                        Bukkit.getLogger().info("[SpigotPlus] UReg: Cond: usedInvs: "
+                                        logInfo.info("[SpigotPlus] UReg: Cond: usedInvs: "
                                                                         + usedInventories);
-                                        Bukkit.getLogger().info("[SpigotPlus] UReg: Cond: unusedInvs: "
+                                        logInfo.info("[SpigotPlus] UReg: Cond: unusedInvs: "
                                                                         + unusedInventories);
                                         return;
                                     }
                                 }
                             }
                         } else {
-                            Bukkit.getLogger().info("[SpigotPlus] UReg: Inv we want does not exist");
+                            logInfo.info("[SpigotPlus] UReg: Inv we want does not exist");
                         }*/
             // BukkitInventory newInv = usedInventories.get(theKey); // This is the faulty line of
             // code
 
         }
-        Bukkit.getLogger().info("[SpigotPlus] UReg: Inventory unregister failed");
+        // logInfo("[SpigotPlus] UReg: Inventory unregister failed");
     }
 }
