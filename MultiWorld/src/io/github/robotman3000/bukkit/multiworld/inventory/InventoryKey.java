@@ -7,25 +7,20 @@ import org.bukkit.GameMode;
 
 public class InventoryKey {
 
-    private final BukkitInventory theInv;
     private final UUID playerKey;
     private final String worldKey;
     private final GameMode gamemodeKey;
 
-    public InventoryKey(String playerKey, String worldKey, String gamemodeKey,
-            BukkitInventory inventory) {
-        this(UUID.fromString(playerKey), worldKey, gamemodeKey, inventory);
+    public InventoryKey(String playerKey, String worldKey, String gamemodeKey) {
+        this(UUID.fromString(playerKey), worldKey, gamemodeKey);
     }
 
-    public InventoryKey(UUID playerKey, String worldKey, GameMode gamemodeKey,
-            BukkitInventory inventory) {
-        this(playerKey, worldKey, gamemodeKey.name(), inventory);
+    public InventoryKey(UUID playerKey, String worldKey, GameMode gamemodeKey) {
+        this(playerKey, worldKey, gamemodeKey.name());
     }
 
-    public InventoryKey(UUID playerKey, String worldKey, String gamemodeKey,
-            BukkitInventory inventory) {
+    public InventoryKey(UUID playerKey, String worldKey, String gamemodeKey) {
         this.playerKey = playerKey;
-        theInv = inventory;
         this.worldKey = worldKey;
         GameMode gamemode = Bukkit.getDefaultGameMode();
         try {
@@ -39,27 +34,33 @@ public class InventoryKey {
 
     @Override
     public boolean equals(Object obj) {
-        // Bukkit.getLogger().warning("Obj: " + obj);
+        InventoryContainer.bool = true;
+        // Bukkit.getLogger().info("[SpigotPlus] DWN: <" + Thread.currentThread().getName()
+        // + "> IK.equals{" + obj.hashCode() + "} "
+        // + InventoryContainer.bool);
         if (obj instanceof InventoryKey) {
-            // Bukkit.getLogger().warning("It is a InventoryKey");
             InventoryKey key = (InventoryKey) obj;
+            // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc2: key=" + key.toString());
             if (gamemodeKey.equals(key.gamemodeKey)) {
+                // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc3");
                 if (playerKey.equals(key.playerKey)) {
+                    // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc4");
                     if (worldKey.equals(key.worldKey)) {
+                        // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc5");
                         return true;
                     }
+                    // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc4x");
                 }
+                // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc3x");
             }
+            // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc2x");
         }
+        // Bukkit.getLogger().info("[SpigotPlus] DWN: Loc1x/false");
         return false;
     }
 
     public GameMode getGamemodeKey() {
         return gamemodeKey;
-    }
-
-    public BukkitInventory getInventory() {
-        return theInv;
     }
 
     public UUID getPlayerKey() {
@@ -71,8 +72,25 @@ public class InventoryKey {
     }
 
     @Override
+    public int hashCode() {
+        int result = 3; // This just needs to start as non-zero
+
+        int c1 = gamemodeKey.hashCode();
+        result = 37 * result + c1;
+
+        int c2 = playerKey.hashCode();
+        result = 37 * result + c2;
+
+        int c3 = worldKey.hashCode();
+        result = 37 * result + c3;
+
+        return result;
+    }
+
+    @Override
     public String toString() {
-        return "InventoryKey [playerKey=" + playerKey + ", worldKey=" + worldKey + ", gamemodeKey="
+        return "InventoryKey {" + hashCode() + "} {" + System.identityHashCode(this)
+                + "} [playerKey" + "=" + playerKey + ", worldKey=" + worldKey + ", gamemodeKey="
                 + gamemodeKey + "]";
     }
 }

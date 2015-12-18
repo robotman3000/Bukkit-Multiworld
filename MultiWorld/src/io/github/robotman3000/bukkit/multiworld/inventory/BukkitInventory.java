@@ -108,10 +108,10 @@ public class BukkitInventory implements ConfigurationSerializable {
 
     }
 
-    public BukkitInventory(Player playerState, boolean nameOnly) {
-        nameForPlayer(playerState);
+    public BukkitInventory(Player player, boolean nameOnly) {
+        nameForPlayer(player);
         if (!nameOnly) {
-            configureForplayer(playerState);
+            configureForplayer(player);
         }
     }
 
