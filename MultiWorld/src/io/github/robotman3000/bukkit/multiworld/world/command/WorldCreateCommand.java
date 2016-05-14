@@ -61,7 +61,7 @@ public class WorldCreateCommand implements CommandExecutor, TabCompleter {
                 creator.generateStructures(generateStructures);
 
                 sender.sendMessage("Generating world");
-                creator.createWorld();
+                creator.createWorld().save();
                 Bukkit.getLogger().info("Generator String: " + creator.generatorSettings());
                 sender.sendMessage("Done generating world");
                 return true;

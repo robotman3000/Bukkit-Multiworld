@@ -13,22 +13,32 @@ import io.github.robotman3000.bukkit.spigotplus.api.CommandEnumMethods;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.World.Environment;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.WorldInitEvent;
+import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.event.world.WorldUnloadEvent;
 
 public class WorldManager extends JavaPluginFeature<SpigotPlus> {
 
@@ -170,14 +180,13 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
                             logInfo("World is listed in config; Skipping world " + file.getName());
                             break skipWorld;
                         }
-                        World world = Bukkit.createWorld(new WorldCreator(file.getName()));
-                        logInfo("Loaded World: " + world);
+
+                        loadWorld(file);
                     } else {
                         // Only load world if in worldList
                         if (worldList.contains(file.getName())) {
                             logInfo("World is listed in config; Loading world " + file.getName());
-                            World world = Bukkit.createWorld(new WorldCreator(file.getName()));
-                            logInfo("Loaded World: " + world);
+                            loadWorld(file);
                         }
                     }
                 }
@@ -189,7 +198,37 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
         logInfo("Finished Loading Configuration");
     }
 
-    @EventHandler
+    private void loadWorld(File file) {
+        WorldCreator creator = new WorldCreator(file.getName());
+        Properties props = new Properties();
+        File theFile = new File(file, "world.properties");
+        if(!theFile.exists()){
+        	try {
+				props.store(new FileWriter(theFile), "Don't delete this file");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        }
+        
+        try {
+			props.load(new FileReader(theFile));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+        creator.seed(Long.valueOf(props.getProperty("seed", String.valueOf(1234567))));
+        creator.type(WorldType.valueOf(props.getProperty("type", "NORMAL")));
+        creator.environment(Environment.valueOf(props.getProperty("enviroment", "NORMAL")));
+        creator.generateStructures(Boolean.valueOf(props.getProperty("generateStructures", String.valueOf(true))));
+        
+        World world = creator.createWorld();
+        logInfo("Loaded World: " + world);
+	}
+    
+
+	@EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent evt) {
         // TODO: Make this more persistent in finding a safe spawn location
         if (!evt.isBedSpawn()) {
@@ -215,11 +254,40 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
                 evt.getWorld().setSpawnLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             }
         }
+        
+    	World world = evt.getWorld();
+    	File folder = world.getWorldFolder();
+    	Properties worldProps = new Properties();
+    	worldProps.setProperty("seed", String.valueOf(world.getSeed()));
+    	worldProps.setProperty("type", world.getWorldType().name());
+    	worldProps.setProperty("enviroment", world.getEnvironment().name());
+    	worldProps.setProperty("generateStructures", String.valueOf(world.canGenerateStructures()));
+    	try {
+			worldProps.store(new FileWriter(new File(folder, "world.properties")), "Don't delete this file!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
+    @EventHandler
+    public void onWorldUnload(WorldUnloadEvent event){
+    	World world = event.getWorld();
+    	File folder = world.getWorldFolder();
+    	Properties worldProps = new Properties();
+    	worldProps.setProperty("seed", String.valueOf(world.getSeed()));
+    	worldProps.setProperty("type", world.getWorldType().name());
+    	worldProps.setProperty("enviroment", world.getEnvironment().name());
+    	worldProps.setProperty("generateStructures", String.valueOf(world.canGenerateStructures()));
+    	try {
+			worldProps.store(new FileWriter(new File(folder, "world.properties")), "Don't delete this file!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
     @Override
     public void saveConfig() {
-        logInfo("Saving World Configuration");
+    	logInfo("Saving World Configuration");
         getFeatureConfig().set("autoLoadWorlds", autoLoadWorlds);
         List<String> worldList = getFeatureConfig().getStringList("worlds");
         if(worldList == null){
