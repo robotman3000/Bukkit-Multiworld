@@ -47,7 +47,6 @@ public class InventoryManager extends JavaPluginFeature<SpigotPlus> implements C
 
     @Override
     public void initalize() {
-        logInfo("Initializing...");
         logInfo("Registering Command: inlist");
         getPlugin().getCommand("inlist").setExecutor(this);
         logInfo("Registering Event Handlers");

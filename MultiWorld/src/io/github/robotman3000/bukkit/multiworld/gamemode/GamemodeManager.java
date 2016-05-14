@@ -44,7 +44,6 @@ public class GamemodeManager extends JavaPluginFeature<SpigotPlus> {
 
     @Override
     public void initalize() {
-        logInfo("Initializing...");
         logInfo("Registering Event Handlers");
         for (Listener evt : getEventHandlers()) {
             getPlugin().getServer().getPluginManager().registerEvents(evt, getPlugin());

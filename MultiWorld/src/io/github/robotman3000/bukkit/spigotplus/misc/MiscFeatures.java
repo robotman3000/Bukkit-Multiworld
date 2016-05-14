@@ -42,7 +42,6 @@ public class MiscFeatures extends JavaPluginFeature<SpigotPlus> {
 
     @Override
     public void initalize() {
-        logInfo("Initializing...");
         for (Commands cmd : Commands.values()) { // Register Commands
             logInfo("Registering Command: " + cmd);
             PluginCommand pCmd = getPlugin().getCommand(cmd.name().toLowerCase());

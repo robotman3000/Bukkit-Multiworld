@@ -14,6 +14,7 @@ import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -137,7 +138,6 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
 
     @Override
     public void initalize() {
-        logInfo("Initializing...");
         for (Commands cmd : Commands.values()) { // Register Commands
             logInfo("Registering Command: " + cmd);
             PluginCommand pCmd = getPlugin().getCommand(cmd.name());
@@ -221,6 +221,11 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
     public void saveConfig() {
         logInfo("Saving World Configuration");
         getFeatureConfig().set("autoLoadWorlds", autoLoadWorlds);
+        List<String> worldList = getFeatureConfig().getStringList("worlds");
+        if(worldList == null){
+        	List<String> list = Collections.emptyList();
+        	getFeatureConfig().set("worlds", list);
+        }
         logInfo("Finished Saving Configuration");
     }
 

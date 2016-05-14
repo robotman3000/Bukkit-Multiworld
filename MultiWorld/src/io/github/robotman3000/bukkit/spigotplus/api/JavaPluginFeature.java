@@ -41,7 +41,7 @@ public abstract class JavaPluginFeature<T extends JavaPlugin> implements Listene
     public void initalize() {
         loadConfig();
     }
-
+    
     protected void loadConfig() {
 
     }
