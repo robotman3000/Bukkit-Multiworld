@@ -16,7 +16,7 @@ public abstract class JavaPluginFeature<T extends JavaPlugin> implements Listene
     }
 
     protected final String getConfigPath() {
-        return plugin.getName() + "." + getFeatureName().replaceAll(" ", "");
+        return plugin.getName() + ".config." + getFeatureName().replaceAll(" ", "");
     }
 
     protected Listener[] getEventHandlers() {
