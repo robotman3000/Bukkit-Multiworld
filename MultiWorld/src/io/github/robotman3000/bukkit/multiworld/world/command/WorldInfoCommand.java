@@ -34,8 +34,8 @@ public class WorldInfoCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias,
             String[] args) {
         ArrayList<String> list = new ArrayList<String>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            list.add(player.getName());
+        for (World world : Bukkit.getWorlds()) {
+            list.add(world.getName());
         }
         return list;
     }

@@ -46,7 +46,7 @@ public class GotoCommand implements CommandExecutor, TabCompleter {
             String[] args) {
         ArrayList<String> list = new ArrayList<>();
 
-        if (args.length < 2) {
+        if (args.length > 1) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 list.add(player.getName());
             }

@@ -10,7 +10,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 
 public class UnloadWorldCommand implements CommandExecutor, TabCompleter {
 
@@ -36,8 +35,8 @@ public class UnloadWorldCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias,
             String[] args) {
         ArrayList<String> list = new ArrayList<String>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            list.add(player.getName());
+        for (World world : Bukkit.getWorlds()) {
+            list.add(world.getName());
         }
         return list;
     }

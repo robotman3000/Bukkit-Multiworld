@@ -71,8 +71,21 @@ public class GameruleCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias,
             String[] args) {
         ArrayList<String> list = new ArrayList<String>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            list.add(player.getName());
+        switch(args.length){
+        case 0:
+            for (World world : Bukkit.getWorlds()) {
+                list.add(world.getName());
+            }
+            break;
+        case 1:
+        	for(GameruleList item : GameruleList.values()){
+        		list.add(item.name());
+        	}
+        	break;
+        default:
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                list.add(player.getName());
+            }
         }
         return list;
     }

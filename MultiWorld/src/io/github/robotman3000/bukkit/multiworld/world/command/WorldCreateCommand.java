@@ -67,7 +67,16 @@ public class WorldCreateCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             sender.sendMessage(ChatColor.RED + "That world already exists");
+        } else if(args.length == 1){
+        	File worldsFolder = Bukkit.getWorldContainer();
+        	for(File file : worldsFolder.listFiles()){
+        		if(WorldManagerHelper.isWorldFolder(file) && file.getName().equals(args[0])){
+        			WorldManagerHelper.loadWorld(file);
+        			return true;
+        		}
+        	}
         }
+        
         return false;
     }
 
@@ -75,8 +84,25 @@ public class WorldCreateCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias,
             String[] args) {
         ArrayList<String> list = new ArrayList<String>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            list.add(player.getName());
+        switch(args.length){
+        case 3:
+        	for(WorldType type : WorldType.values()){
+        		list.add(type.name());
+        	}
+        	break;
+        case 4:
+        	for(Environment type : Environment.values()){
+        		list.add(type.name());
+        	}
+        	break;
+        case 5:
+        	list.add("true");
+        	list.add("false");
+        	break;
+        default:
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                list.add(player.getName());
+            }
         }
         return list;
     }
