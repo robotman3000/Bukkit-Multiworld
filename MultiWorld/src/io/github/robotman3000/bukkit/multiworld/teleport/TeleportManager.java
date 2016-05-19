@@ -42,7 +42,7 @@ public class TeleportManager extends JavaPluginFeature<SpigotPlus> {
     }
 
     @Override
-    public void initalize() {
+    public boolean initalize() {
         logInfo("Initializing...");
         for (Commands cmd : Commands.values()) { // Register Commands
             logInfo("Registering Command: " + cmd);
@@ -57,6 +57,7 @@ public class TeleportManager extends JavaPluginFeature<SpigotPlus> {
         }
         logInfo("Loading Config");
         loadConfig();
+        return true;
     }
 
     @Override

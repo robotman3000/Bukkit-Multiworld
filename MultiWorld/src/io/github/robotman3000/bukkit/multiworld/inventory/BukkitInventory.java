@@ -279,7 +279,9 @@ public class BukkitInventory implements ConfigurationSerializable {
     }
 
     protected void setCompassTarget(Location compassTarget) {
-        this.compassTarget = compassTarget;
+    	if(compassTarget  != null){
+    		this.compassTarget = compassTarget;
+    	}
     }
 
     protected void setDisplayName(String displayName) {

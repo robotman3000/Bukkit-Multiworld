@@ -41,7 +41,7 @@ public class MiscFeatures extends JavaPluginFeature<SpigotPlus> {
     }
 
     @Override
-    public void initalize() {
+    public boolean initalize() {
         for (Commands cmd : Commands.values()) { // Register Commands
             logInfo("Registering Command: " + cmd);
             PluginCommand pCmd = getPlugin().getCommand(cmd.name().toLowerCase());
@@ -55,6 +55,7 @@ public class MiscFeatures extends JavaPluginFeature<SpigotPlus> {
         }
         logInfo("Loading Config");
         loadConfig();
+        return true;
     }
 
     @Override

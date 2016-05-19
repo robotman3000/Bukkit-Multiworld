@@ -46,7 +46,7 @@ public class InventoryManager extends JavaPluginFeature<SpigotPlus> implements C
     }
 
     @Override
-    public void initalize() {
+    public boolean initalize() {
         logInfo("Registering Command: inlist");
         getPlugin().getCommand("inlist").setExecutor(this);
         logInfo("Registering Event Handlers");
@@ -56,6 +56,7 @@ public class InventoryManager extends JavaPluginFeature<SpigotPlus> implements C
         logInfo("Loading Config");
         ConfigurationSerialization.registerClass(BukkitInventory.class);
         loadConfig();
+        return true;
     }
 
     private boolean listInvCommand(CommandSender sender, Command cmd, String label, String[] args) {

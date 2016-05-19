@@ -13,8 +13,6 @@ import io.github.robotman3000.bukkit.spigotplus.api.CommandEnumMethods;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,18 +24,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
-import org.bukkit.World.Environment;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.WorldInitEvent;
-import org.bukkit.event.world.WorldSaveEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 
 public class WorldManager extends JavaPluginFeature<SpigotPlus> {
@@ -147,7 +140,7 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
     }
 
     @Override
-    public void initalize() {
+    public boolean initalize() {
         for (Commands cmd : Commands.values()) { // Register Commands
             logInfo("Registering Command: " + cmd);
             PluginCommand pCmd = getPlugin().getCommand(cmd.name());
@@ -161,6 +154,7 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
         }
         logInfo("Loading Config");
         loadConfig();
+        return true;
     }
 
     @Override
@@ -181,12 +175,12 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
                             break skipWorld;
                         }
 
-                        loadWorld(file);
+                        WorldManagerHelper.loadWorld(file);
                     } else {
                         // Only load world if in worldList
                         if (worldList.contains(file.getName())) {
                             logInfo("World is listed in config; Loading world " + file.getName());
-                            loadWorld(file);
+                            WorldManagerHelper.loadWorld(file);
                         }
                     }
                 }
@@ -198,35 +192,6 @@ public class WorldManager extends JavaPluginFeature<SpigotPlus> {
         logInfo("Finished Loading Configuration");
     }
 
-    private void loadWorld(File file) {
-        WorldCreator creator = new WorldCreator(file.getName());
-        Properties props = new Properties();
-        File theFile = new File(file, "world.properties");
-        if(!theFile.exists()){
-        	try {
-				props.store(new FileWriter(theFile), "Don't delete this file");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        }
-        
-        try {
-			props.load(new FileReader(theFile));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-        
-        creator.seed(Long.valueOf(props.getProperty("seed", String.valueOf(1234567))));
-        creator.type(WorldType.valueOf(props.getProperty("type", "NORMAL")));
-        creator.environment(Environment.valueOf(props.getProperty("enviroment", "NORMAL")));
-        creator.generateStructures(Boolean.valueOf(props.getProperty("generateStructures", String.valueOf(true))));
-        
-        World world = creator.createWorld();
-        logInfo("Loaded World: " + world);
-	}
-    
 
 	@EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent evt) {

@@ -38,8 +38,9 @@ public abstract class JavaPluginFeature<T extends JavaPlugin> implements Listene
         return plugin;
     }
 
-    public void initalize() {
+    public boolean initalize() {
         loadConfig();
+		return false;
     }
     
     protected void loadConfig() {
