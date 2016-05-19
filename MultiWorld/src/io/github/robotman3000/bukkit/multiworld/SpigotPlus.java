@@ -1,56 +1,26 @@
 package io.github.robotman3000.bukkit.multiworld;
 
-import io.github.robotman3000.bukkit.multiworld.gamemode.GamemodeManager;
-import io.github.robotman3000.bukkit.multiworld.inventory.InventoryManager;
-import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-import io.github.robotman3000.bukkit.spigotplus.chat.ChatManager;
-import io.github.robotman3000.bukkit.spigotplus.death.DeathMessageManager;
-import io.github.robotman3000.bukkit.spigotplus.misc.MiscFeatures;
-import io.github.robotman3000.bukkit.spigotplus.mods.PluginModsManager;
-import io.github.robotman3000.bukkit.spigotplus.performance.PeformanceMonitoringManager;
-import io.github.robotman3000.bukkit.spigotplus.schedule.ServerSchedulingManager;
-import io.github.robotman3000.bukkit.spigotplus.sound.AtmosphericSoundsManager;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SpigotPlus extends JavaPlugin {
 
-	private final ArrayList<JavaPluginFeature<SpigotPlus>> features = new ArrayList<>();
-
-	public SpigotPlus() {
-		features.add(new MiscFeatures(this));
-		features.add(new WorldManager(this));
-		features.add(new InventoryManager(this));
-		features.add(new GamemodeManager(this));
-		features.add(new DeathMessageManager(this));
-		features.add(new ChatManager(this));
-		features.add(new PeformanceMonitoringManager(this));
-		features.add(new ServerSchedulingManager(this));
-		features.add(new AtmosphericSoundsManager(this));
-		features.add(new PluginModsManager(this));
-	}
+	private final ArrayList<JavaPluginFeature<? extends JavaPlugin>> features = new ArrayList<>();
 
 	@Override
 	public void onDisable() {
 		// Reminder: Don't assume that this is only called on a server restart
-		for (JavaPluginFeature<SpigotPlus> feature : features) {
-			String fixedName = getName() + "."
-					+ feature.getFeatureName().replaceAll(" ", "-");
-
-			if (!getConfig().contains(fixedName)) {
-				getConfig().set(fixedName, false);
-			}
-
-			if (getConfig().getBoolean(fixedName)) {
-				Bukkit.getLogger().info(
-						"[SpigotPlus] Disabling plugin feature \""
-								+ feature.getFeatureName() + "\"");
-				feature.shutdown();
-			}
+		for (JavaPluginFeature<? extends JavaPlugin> feature : features) {
+			Bukkit.getLogger().info(
+					"[SpigotPlus] Disabling plugin feature \""
+							+ feature.getFeatureName() + "\"");
+			feature.shutdown();
 		}
 		saveConfig();
 	}
@@ -60,19 +30,42 @@ public class SpigotPlus extends JavaPlugin {
 		// Reminder: Don't assume that this is only called on a server restart
 		saveDefaultConfig();
 
-		for (JavaPluginFeature<SpigotPlus> feature : features) {
-			String fixedName = getName() + "."
-					+ feature.getFeatureName().replaceAll(" ", "-");
-
-			if (!getConfig().contains(fixedName)) {
-				getConfig().set(fixedName, false);
-			}
-
-			if (getConfig().getBoolean(fixedName)) {
-				Bukkit.getLogger().info(
-						"[SpigotPlus] Initializing plugin feature \""
-								+ feature.getFeatureName() + "\"");
-				feature.initalize();
+		List<String> enabledFeatures = getConfig().getStringList("SpigotPlus.feature");
+		if(enabledFeatures.isEmpty()){
+			Bukkit.getLogger().warning("[SpigotPlus] No features have been enabled so there is no need for this plugin. Automatically disabling plugin");
+			
+			// The list was empty so we can use it instead of creating a new object
+			getConfig().set("SpigotPlus.feature", enabledFeatures);
+			Bukkit.getPluginManager().disablePlugin(this);
+		}
+		for(String featurePath : enabledFeatures){
+			try {
+				Class<?> temp = Class.forName(featurePath);
+				@SuppressWarnings("unchecked")
+				Class<JavaPluginFeature<JavaPlugin>> featureClass = (Class<JavaPluginFeature<JavaPlugin>>) temp.asSubclass(JavaPluginFeature.class);
+				Constructor<JavaPluginFeature<JavaPlugin>> constructor = featureClass.getConstructor(SpigotPlus.class);
+				JavaPluginFeature<JavaPlugin> feature = constructor.newInstance(this);
+				
+				Bukkit.getLogger().info("[SpigotPlus] Initializing plugin feature \"" + feature.getFeatureName() + "\"");	
+				if(feature.initalize()){
+					features.add(feature);
+				} else {
+					feature.shutdown();
+					Bukkit.getLogger().warning("[SpigotPlus] The plugin feature \"" + feature.getFeatureName() + "\" reports that it failed to initialize. It has been disabled");
+				}
+				
+			} catch (ClassNotFoundException e) {
+				Bukkit.getLogger().severe("[SpigotPlus] Failed to locate the JavaPluginFeature class for the path: " + featurePath);
+				e.printStackTrace();
+			} catch (ClassCastException e){
+				Bukkit.getLogger().severe("[SpigotPlus] " + featurePath + " does not extend JavaPluginFeature and cannot be loaded");
+				e.printStackTrace();
+			} catch(NoSuchMethodException e){
+				Bukkit.getLogger().severe("[SpigotPlus] The constructor of the plugin feature " + featurePath + " does not take the correct parameters and cannot be loaded");
+				e.printStackTrace();
+			} catch (Exception e){
+				Bukkit.getLogger().severe("[SpigotPlus] An unhandled exception occured while loading the plugin feature " + featurePath);
+				e.printStackTrace();
 			}
 		}
 	}
