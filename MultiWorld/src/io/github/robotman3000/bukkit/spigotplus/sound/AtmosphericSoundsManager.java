@@ -7,7 +7,11 @@ public class AtmosphericSoundsManager extends JavaPluginFeature<SpigotPlus> {
 
 	public AtmosphericSoundsManager(SpigotPlus plugin) {
 		super(plugin, "Atmospheric Sound System");
-		// TODO Auto-generated constructor stub
 	}
 
+	@Override
+	public boolean initalize() {
+		
+		return true;
+	}
 }
