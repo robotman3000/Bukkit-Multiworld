@@ -40,7 +40,7 @@ public abstract class JavaPluginFeature<T extends JavaPlugin> implements Listene
 
     public boolean initalize() {
         loadConfig();
-		return false;
+		return true;
     }
     
     protected void loadConfig() {
