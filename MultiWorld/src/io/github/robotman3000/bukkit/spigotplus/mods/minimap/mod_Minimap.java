@@ -1,57 +1,77 @@
 package io.github.robotman3000.bukkit.spigotplus.mods.minimap;
 
+import io.github.robotman3000.bukkit.multiworld.SpigotPlus;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import io.github.robotman3000.bukkit.spigotplus.mods.PluginModBase;
+//TODO: Ensure that every map has our renderer
+public class mod_Minimap extends JavaPluginFeature<SpigotPlus> implements Listener {
 
-public class mod_Minimap extends PluginModBase implements Listener {
-
-	public mod_Minimap(JavaPlugin hostPlugin) {
-		super(hostPlugin);
+	private List<MapState> knownMaps = new ArrayList<>();
+	private MinimapRenderer renderer = new MinimapRenderer(Collections.unmodifiableList(knownMaps), true); 
+	
+	public mod_Minimap(SpigotPlus hostPlugin) {
+		super(hostPlugin, "Minimap Mod");
 	}
 
 	@Override
-	public String getName() {
-		return "Minimap";
+	public boolean initalize() {
+		Bukkit.getLogger().info("Starting the minimap mod");
+		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
+		return true;
 	}
-
+	
 	@Override
-	public void initialize(ConfigurationSection config) {
-		getHost().getServer().getPluginManager().registerEvents(this, getHost());
-		Bukkit.getLogger().warning("The minimap mod is only a proof of concept at this time. It is not production ready");
-		Bukkit.getLogger().warning("It should not, however, be able to crash the server as it is stable");
+	public String getFeatureName() {
+		return "Minimap Mod";
+	}
+	
+	@EventHandler
+	public void onPlayerHotbarChange(PlayerItemHeldEvent event){
+		Player player = event.getPlayer();
+		ItemStack item = player.getInventory().getItem(event.getNewSlot());
+		
+		if(item != null && item.getType() == Material.MAP){
+			for(MapState state : knownMaps){
+				if(item.getDurability() == state.getMapID()){
+					MapView map = state.getMapView();
+					boolean instanceMissing = true;
+					for(MapRenderer render : map.getRenderers()){
+						if(render instanceof MinimapRenderer){
+							instanceMissing = false;
+						}
+					}
+					
+					if(instanceMissing){
+						logInfo("Map " + state.getMapID() + " did not have a Minimap Renderer");
+						map.getRenderers().add(renderer);
+					}
+					
+					player.sendMap(map);
+					break;
+				}
+			}
+		}
 	}
 	
 	@EventHandler
 	public void onMapInitialize(MapInitializeEvent event){
-		event.getMap().addRenderer(new MapRenderer() {
-			@Override
-			public void render(MapView map, MapCanvas canvas, Player player) {
-				Location loc = player.getLocation();
-				map.setCenterX(loc.getBlockX());
-				map.setCenterZ(loc.getBlockZ());
-			}
-		});
+		// Every new map will get our renderer
+		event.getMap().addRenderer(renderer);
+		knownMaps.add(new MapState(event.getMap()));
 	}
-	
-	@Override
-	public void shutdown() {
-		// TODO Auto-generated method stub
-
-	}
-
 }
