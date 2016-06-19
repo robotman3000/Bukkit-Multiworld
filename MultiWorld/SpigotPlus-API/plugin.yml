@@ -1,0 +1,3 @@
+name: SpigotPlus-API
+main: io.github.robotman3000.bukkit.spigotplus.api.ignore.Main
+version: 0.2.1-SNAPSHOT

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="Multiworld"/>
+	<classpathentry kind="src" path="SpigotPlus-API"/>
 	<classpathentry kind="src" path="Gamemode"/>
 	<classpathentry kind="src" path="Inventory"/>
 	<classpathentry kind="src" path="Teleport"/>

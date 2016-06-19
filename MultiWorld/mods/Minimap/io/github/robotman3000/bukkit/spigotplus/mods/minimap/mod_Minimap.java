@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.spigotplus.mods.minimap;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,16 +14,17 @@ import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 //TODO: Ensure that every map has our renderer
-public class mod_Minimap extends JavaPluginFeature<JavaPlugin> implements Listener {
+public class mod_Minimap extends JavaPluginFeature implements Listener {
 
 	private List<MapState> knownMaps = new ArrayList<>();
 	private MinimapRenderer renderer = new MinimapRenderer(Collections.unmodifiableList(knownMaps), true); 
 	
-	public mod_Minimap(JavaPlugin hostPlugin) {
-		super(hostPlugin, "Minimap Mod");
+	public mod_Minimap() {
+		setFeatureName("Minimap Mod");
 	}
 
 	@Override
@@ -73,5 +72,15 @@ public class mod_Minimap extends JavaPluginFeature<JavaPlugin> implements Listen
 		// Every new map will get our renderer
 		event.getMap().addRenderer(renderer);
 		knownMaps.add(new MapState(event.getMap()));
+	}
+	
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 0;
 	}
 }

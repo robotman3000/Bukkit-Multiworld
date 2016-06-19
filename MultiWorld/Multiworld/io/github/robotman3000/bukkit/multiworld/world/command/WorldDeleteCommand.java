@@ -1,8 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.world.command;
 
-import io.github.robotman3000.bukkit.multiworld.CommonLogic;
-import io.github.robotman3000.bukkit.multiworld.world.WorldManagerHelper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +12,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+
+import io.github.robotman3000.bukkit.multiworld.CommonLogic;
+import io.github.robotman3000.bukkit.multiworld.world.WorldManagerHelper;
 
 public class WorldDeleteCommand implements CommandExecutor, TabCompleter {
 

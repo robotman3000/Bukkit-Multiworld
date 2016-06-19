@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.spigotplus.mods.deathchest;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +14,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class mod_DeathChest extends JavaPluginFeature<JavaPlugin> implements Listener {
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
+
+public class mod_DeathChest extends JavaPluginFeature implements Listener {
 
 	private boolean attemptDoubleChest;
 	private boolean saveToEnderChest;
@@ -28,8 +27,8 @@ public class mod_DeathChest extends JavaPluginFeature<JavaPlugin> implements Lis
 	private List<Integer> enderItems;
 	private final int SINGLE_CHEST_SIZE = 36;
 
-	public mod_DeathChest(JavaPlugin plugin) {
-		super(plugin, "Deathchest Mod");
+	public mod_DeathChest() {
+		setFeatureName("Deathchest Mod");
 	}
 
 	@Override
@@ -141,12 +140,22 @@ public class mod_DeathChest extends JavaPluginFeature<JavaPlugin> implements Lis
 		this.useInventoryChest = getFeatureConfig().getBoolean("useInventoryChest", true);
 	}
 	
-	protected void saveConfig() {
+	public void saveConfig() {
 		getFeatureConfig().set("attemptDoubleChest", this.attemptDoubleChest);
 		getFeatureConfig().set("ender.saveToEnderChest", this.saveToEnderChest);
 		getFeatureConfig().set("ender.enderChestRequired", this.enderChestRequired);
 		getFeatureConfig().set("ender.items", this.enderItems);
 		getFeatureConfig().set("generateChest", this.generateChest);
 		getFeatureConfig().set("useInventoryChest", this.useInventoryChest);
+	}
+	
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 0;
 	}
 }

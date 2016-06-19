@@ -1,6 +1,7 @@
 name: SpigotPlus-Multiworld
 main: io.github.robotman3000.bukkit.multiworld.world.WorldManager
 version: 0.2.1-SNAPSHOT
+depend: [SpigotPlus-API]
 commands:
    createworld:
       description: Creates a world or loads the world if it already exists.

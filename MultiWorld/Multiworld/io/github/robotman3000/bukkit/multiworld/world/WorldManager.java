@@ -1,16 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.world;
 
-import io.github.robotman3000.bukkit.multiworld.world.command.GameruleCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.GenerateWorldCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.ListWorldsCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.UnloadWorldCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldCreateCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldDeleteCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldInfoCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldPropertyCommand;
-import io.github.robotman3000.bukkit.spigotplus.api.CommandEnumMethods;
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,142 +13,68 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class WorldManager extends JavaPluginFeature<JavaPlugin> {
+import io.github.robotman3000.bukkit.multiworld.world.command.GameruleCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.GenerateWorldCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.GotoCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.ListWorldsCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.UnloadWorldCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldCreateCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldDeleteCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldInfoCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldPropertyCommand;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommand;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
-    private enum Commands implements CommandEnumMethods<JavaPlugin> {
-        createworld {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new WorldCreateCommand();
-            }
+public class WorldManager extends JavaPluginFeature {
 
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new WorldCreateCommand();
-            }
-        },
-        deleteworld {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new WorldDeleteCommand();
-            }
+    private enum Commands implements JavaPluginCommand {
+        createworld (new WorldCreateCommand()),
+        deleteworld (new WorldDeleteCommand()),
+        generateworld (new GenerateWorldCommand()),
+        unloadworld (new UnloadWorldCommand()),
+        worldinfo (new WorldInfoCommand()),
+        listworlds (new ListWorldsCommand()),
+        gamerule (new GameruleCommand()),
+        worldproperty (new WorldPropertyCommand()),
+        Goto (new GotoCommand());
 
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new WorldDeleteCommand();
-            }
-        },
-        generateworld {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new GenerateWorldCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new GenerateWorldCommand();
-            }
-        },
-        unloadworld {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new UnloadWorldCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new UnloadWorldCommand();
-            }
-        },
-        worldinfo {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new WorldInfoCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new WorldInfoCommand();
-            }
-        },
-        listworlds {
-
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new ListWorldsCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new ListWorldsCommand();
-            }
-        },
-        gamerule {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new GameruleCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new GameruleCommand();
-            }
-        },
-        worldproperty {
-            @Override
-            public CommandExecutor getExecutor(JavaPlugin plugin) {
-                return new WorldPropertyCommand();
-            }
-
-            @Override
-            public TabCompleter getTabCompleter(JavaPlugin plugin) {
-                return new WorldPropertyCommand();
-            }
-        };
+    	CommandExecutor command;
+    	TabCompleter tabCompleter;
+    	
+    	private Commands(Object obj) {
+			command = (CommandExecutor) obj;
+			tabCompleter = (TabCompleter) obj;
+		}
+    	
+        @Override
+        public CommandExecutor getExecutor(){
+        	return command;
+        }
 
         @Override
-        public abstract CommandExecutor getExecutor(JavaPlugin plugin);
-
-        @Override
-        public abstract TabCompleter getTabCompleter(JavaPlugin plugin);
+        public TabCompleter getTabCompleter(){
+        	return tabCompleter;
+        }
     }
 
     public boolean autoLoadWorlds;
-
-    public WorldManager(JavaPlugin plugin) {
-        super(plugin, "World Manager");
-    }
-
-    @Override
-    public boolean initalize() {
-        for (Commands cmd : Commands.values()) { // Register Commands
-            logInfo("Registering Command: " + cmd);
-            PluginCommand pCmd = getPlugin().getCommand(cmd.name());
-            pCmd.setExecutor(cmd.getExecutor(getPlugin()));
-            pCmd.setTabCompleter(cmd.getTabCompleter(getPlugin()));
-        }
-
-        logInfo("Registering Event Handlers");
-        for (Listener evt : getEventHandlers()) {
-            getPlugin().getServer().getPluginManager().registerEvents(evt, getPlugin());
-        }
-        logInfo("Loading Config");
-        loadConfig();
-        return true;
-    }
+	private boolean appendWorldInChat;
+	
+	public WorldManager() {
+		setFeatureName("World Manager");
+	}
 
     @Override
     public void loadConfig() {
         logInfo("Loading World Configuration");
+        appendWorldInChat = getFeatureConfig().getBoolean("appendWorldInChat", true);
         autoLoadWorlds = getFeatureConfig().getBoolean("autoLoadWorlds", false);
         List<String> worldList = getFeatureConfig().getStringList("worlds");
 
@@ -209,6 +124,14 @@ public class WorldManager extends JavaPluginFeature<JavaPlugin> {
     }
 
     @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent evt) {
+        if (appendWorldInChat) {
+            String message = evt.getMessage();
+            evt.setMessage("[" + evt.getPlayer().getWorld().getName() + "] " + message);
+        }
+    };
+    
+    @EventHandler
     public void onWorldInit(WorldInitEvent evt) {
         Location loc = WorldManagerHelper.isLocationSafe(evt.getWorld().getSpawnLocation());
         if (loc != null) {
@@ -253,6 +176,7 @@ public class WorldManager extends JavaPluginFeature<JavaPlugin> {
     @Override
     public void saveConfig() {
     	logInfo("Saving World Configuration");
+    	getFeatureConfig().set("appendWorldInChat", appendWorldInChat);
         getFeatureConfig().set("autoLoadWorlds", autoLoadWorlds);
         List<String> worldList = getFeatureConfig().getStringList("worlds");
         if(worldList == null){
@@ -264,8 +188,21 @@ public class WorldManager extends JavaPluginFeature<JavaPlugin> {
 
     @Override
     public void shutdown() {
-        logInfo("Shutting Down...");
         saveConfig();
     }
 
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 1;
+	}
+
+	@Override
+	protected JavaPluginCommand[] getCommands() {
+		return Commands.values();
+	}
 }

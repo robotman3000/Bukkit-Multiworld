@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,10 +18,11 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 //TODO: Add logging
-public class InventoryManager extends JavaPluginFeature<JavaPlugin> implements CommandExecutor {
+public class InventoryManager extends JavaPluginFeature implements CommandExecutor {
 
     private final InventoryContainer invs = new InventoryContainer();
 
@@ -31,8 +30,8 @@ public class InventoryManager extends JavaPluginFeature<JavaPlugin> implements C
 
     public boolean seperateGamemodeInventories; // TODO: Implement this config option
 
-    public InventoryManager(JavaPlugin multiWorld) {
-        super(multiWorld, "Inventory Manager");
+    public InventoryManager() {
+        setFeatureName("Inventory Manager");
     }
 
     private String getGroupName(String name) {
@@ -232,7 +231,7 @@ public class InventoryManager extends JavaPluginFeature<JavaPlugin> implements C
     }
 
     @Override
-    protected void saveConfig() {
+	public void saveConfig() {
         invs.saveInventoryConfig(getPlugin(), this);
         // Save the world groups and gamemode settings
         HashSet<String> knownWorlds = new HashSet<>();
@@ -252,4 +251,14 @@ public class InventoryManager extends JavaPluginFeature<JavaPlugin> implements C
         saveConfig();
         ConfigurationSerialization.unregisterClass(BukkitInventory.class);
     }
+    
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 0;
+	}
 }

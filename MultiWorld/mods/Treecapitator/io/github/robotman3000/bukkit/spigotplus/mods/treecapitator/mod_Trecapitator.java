@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.spigotplus.mods.treecapitator;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,13 +9,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class mod_Trecapitator extends JavaPluginFeature<JavaPlugin> implements
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
+
+public class mod_Trecapitator extends JavaPluginFeature implements
 		Listener {
 
-	public mod_Trecapitator(JavaPlugin plugin) {
-		super(plugin, "Treecapitator Mod");
+	public mod_Trecapitator() {
+		setFeatureName("Treecapitator Mod");
 	}
 
 	@Override
@@ -73,5 +72,15 @@ public class mod_Trecapitator extends JavaPluginFeature<JavaPlugin> implements
 				}
 			}
 		}
+	}
+	
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 0;
 	}
 }

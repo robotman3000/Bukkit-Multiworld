@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.world.command;
 
-import io.github.robotman3000.bukkit.multiworld.CommonLogic;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +10,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+
+import io.github.robotman3000.bukkit.multiworld.CommonLogic;
 
 public class ListWorldsCommand implements CommandExecutor, TabCompleter {
 

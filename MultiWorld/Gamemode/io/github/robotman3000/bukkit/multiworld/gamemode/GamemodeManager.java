@@ -1,7 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.gamemode;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,14 +13,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class GamemodeManager extends JavaPluginFeature<JavaPlugin> {
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
+
+public class GamemodeManager extends JavaPluginFeature {
 
     private final HashMap<String, GameMode> gamemodes = new HashMap<>();
 
-    public GamemodeManager(JavaPlugin multiWorld) {
-        super(multiWorld, "Gamemode Manager");
+    public GamemodeManager() {
+        setFeatureName("Gamemode Manager");
     }
 
     private void forceGamemode(PlayerEvent evt) {
@@ -81,7 +80,7 @@ public class GamemodeManager extends JavaPluginFeature<JavaPlugin> {
     }
 
     @Override
-    protected void saveConfig() {
+	public void saveConfig() {
         HashMap<GameMode, List<String>> config = new HashMap<GameMode, List<String>>();
         for (GameMode gamemode : GameMode.values()) {
             config.put(gamemode, new ArrayList<String>());
@@ -108,4 +107,14 @@ public class GamemodeManager extends JavaPluginFeature<JavaPlugin> {
         logInfo("Shutting Down...");
         saveConfig();
     }
+
+	@Override
+	public int getMinimumMajorVersion() {
+		return 2;
+	}
+
+	@Override
+	public int getMinimumMinorVersion() {
+		return 0;
+	}
 }

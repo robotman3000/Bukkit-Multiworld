@@ -1,4 +1,4 @@
-package io.github.robotman3000.bukkit.spigotplus.misc.command;
+package io.github.robotman3000.bukkit.multiworld.world.command;
 
 import java.util.ArrayList;
 import java.util.List;
