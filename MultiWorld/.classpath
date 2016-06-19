@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="Multiworld"/>
+	<classpathentry kind="src" path="Gamemode"/>
+	<classpathentry kind="src" path="Inventory"/>
+	<classpathentry kind="src" path="Teleport"/>
+	<classpathentry kind="src" path="mods/Deathchest"/>
+	<classpathentry kind="src" path="mods/Minimap"/>
+	<classpathentry kind="src" path="mods/Treecapitator"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/enims/Desktop/Spigot/Spigot/Spigot-API/target/spigot-api-1.8.8-R0.1-SNAPSHOT-shaded.jar" sourcepath="/home/enims/Desktop/Spigot/Spigot/Spigot-API/src/main/java">
+	<classpathentry kind="lib" path="/home/enims/Projects/Other/Spigot API/Spigot/Spigot-API/target/spigot-api-1.9.4-R0.1-SNAPSHOT-shaded.jar" sourcepath="/home/enims/Projects/Other/Spigot API/Spigot/Spigot-API/src/main/java">
 		<attributes>
 			<attribute name="javadoc_location" value="https://hub.spigotmc.org/javadocs/spigot/"/>
 		</attributes>

@@ -1,0 +1,3 @@
+name: SpigotPlus-Gamemode
+main: io.github.robotman3000.bukkit.multiworld.gamemode.GamemodeManager
+version: 0.2.1-SNAPSHOT

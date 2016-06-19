@@ -1,0 +1,94 @@
+box: debian
+build:
+  steps:
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
+    - script:
+        name: Install Tools
+        code: apt-get update && apt-get install -y coreutils vim-common git openjdk-7-jre-headless openjdk-7-jdk tar git curl && rm -rf /var/lib/apt/lists/*
+    - script:
+        name: Downloading BuildTools.jar
+        code: curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    - script:
+        name: Java Version (Used to Debug Java Fails)
+        code: java -version
+    - script:
+        name: Java Location
+        code: which java
+    - script:
+        name: CD and Making META-INF Directory (Reoccuring CD Due to Steps Resetting Back to Root)
+        code: cd MultiWorld/src/ && mkdir META-INF
+    - script:
+        name: Outputting MANIFEST.MF.hex
+        code: "cd MultiWorld/src/ && echo -e \"0000000: 4d61 6e69 6665 7374 2d56 6572 7369 6f6e  Manifest-Version\n0000010: 3a20 312e 300d 0a0d 0a                   : 1.0....\" > MANIFEST.MF.hex"
+    - script:
+        name: List Directories (Debug Purposes)
+        code: cd MultiWorld/src/ && ls && ls META-INF
+    - script:
+        name: Converting MANIFEST.MF.hex into META-INF/MANIFEST.MF and Removing MANIFEST.MF.hex
+        code: cd MultiWorld/src/ && xxd -r MANIFEST.MF.hex > META-INF/MANIFEST.MF && rm MANIFEST.MF.hex
+    - script:
+        name: Compiling BuildTools to Latest Version
+        code: java -jar BuildTools.jar --rev latest
+    - script:
+        name: Display All Files in Project (Debug Step)
+        code: find -type f
+    - script:
+        name: Compiling .java files to .class files
+        code: cd MultiWorld/src/ && javac $(find | grep .java) -classpath ../../Spigot/Spigot-API/target/spigot-api-*-shaded.jar
+    - script:
+        name: Packaging plugin source code and binaries into Jar file
+        code: "cd MultiWorld/src/ && jar cf SpigotPlus-$(cat plugin.yml | grep version | sed 's/version: //').jar ."
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
+
+deploy:
+  #steps: #steps is to deploy when a branch that does not exist is called.
+  master:
+    - script:
+        name: Install Tools
+        code: apt-get update && apt-get install -y curl file zip && rm -rf /var/lib/apt/lists/*
+    - script:
+        name: Versioning
+        code: "export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')"
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
+    - github-create-release:
+        token: $GITHUB_TOKEN
+        tag: v$(echo $APP_VERSION)
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: "MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar"
+        release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
+  nightly:
+    - script:
+        name: Install Tools
+        code: apt-get update && apt-get install -y curl file zip && rm -rf /var/lib/apt/lists/*
+    - script:
+        name: Date Time Variable
+        code: export TIME=$(date +%s)
+    - script:
+        name: Adding Nightly to Build
+        code: "mv MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //').jar MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')-nightly$(echo $TIME).jar"
+    - script:
+        name: Versioning
+        code: "export APP_VERSION=$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')"
+    - script:
+        name: List All Files (Debug Purposes)
+        code: find
+    - github-create-release:
+        token: $GITHUB_TOKEN
+        tag: v$(echo $APP_VERSION)-nightly$(echo $TIME)
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: "MultiWorld/src/SpigotPlus-$(cat MultiWorld/src/plugin.yml | grep version | sed 's/version: //')-nightly$(echo $TIME).jar"
+        release_id: $WERCKER_GITHUB_CREATE_RELEASE_ID
+
+  # notify slack on successful or failed deploys
+  after-steps:
+    - slack-notifier:
+        url: $SLACK_URL
+        username: werckerbot
