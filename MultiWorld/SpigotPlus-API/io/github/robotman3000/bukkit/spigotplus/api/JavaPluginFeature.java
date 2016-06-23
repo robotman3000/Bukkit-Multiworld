@@ -8,45 +8,42 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 
-	private String name = "";
-	private final String VERSION = "v0.2.1-SNAPSHOT";
-	private int MAJOR_VERSION = 2;
-	private int MINOR_VERSION = 1;
+	public static int API_MAJOR_VERSION = 1;
+	public static int API_MINOR_VERSION = 0;
 	private boolean loadFailed = false;
 
 	@Override
 	public final void onEnable() {
-		if (getAPIMajorVersion() < getMinimumMajorVersion()) {
-			logSevere("API version is too old! ( " + getAPIMajorVersion() + "." + getAPIMinorVersion() + " < "
-					+ getMinimumMajorVersion() + "." + getMinimumMinorVersion() + " )");
+		if (API_MAJOR_VERSION < getRequiredMajorVersion()) {
+			logSevere("API version is too old! ( " + API_MAJOR_VERSION + "." + API_MINOR_VERSION + " < "
+					+ getRequiredMajorVersion() + "." + getRequiredMinorVersion() + " )");
 			loadFailed = true;
-			Bukkit.getPluginManager().disablePlugin(this);
 		} else {
-			if(getAPIMajorVersion() > getMinimumMajorVersion()){
+			if(API_MAJOR_VERSION > getRequiredMajorVersion()){
 				logWarn("Major API version is newer than the minimum. Things may not work as expected");
 			}
 			
-	        for (JavaPluginCommand cmd : getCommands()) { // Register Commands
-	            logInfo("Registering Command: " + cmd);
-	            PluginCommand pCmd = getPlugin().getCommand(cmd.name());
+	        for (JavaPluginCommandList cmd : getCommands()) { // Register Commands
+	            logInfo("Registering Command: " + cmd.name());
+	            PluginCommand pCmd = getCommand(cmd.name());
 	            pCmd.setExecutor(cmd.getExecutor());
 	            pCmd.setTabCompleter(cmd.getTabCompleter());
 	        }
 
-	        logInfo("Registering Event Handlers");
 	        for (Listener evt : getEventHandlers()) {
-	            getPlugin().getServer().getPluginManager().registerEvents(evt, getPlugin());
+	        	logInfo("Registering Event Listener: " + evt);
+	            getServer().getPluginManager().registerEvents(evt, this);
 	        }
 	        
-			initalize();
-			
-	        logInfo("Loading Config");
-	        loadConfig();
+	        saveDefaultConfig();
+			if(!(loadFailed = startup())){
+				logWarn("Failed to startup!!");
+			}
 		}
-	}
-
-	protected JavaPluginCommand[] getCommands() {
-		return new JavaPluginCommand[0];
+		
+		if(loadFailed){
+			Bukkit.getPluginManager().disablePlugin(this);
+		}
 	}
 
 	@Override
@@ -55,67 +52,36 @@ public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 			shutdown();
 		}
 	}
+	
+	protected final void logInfo(String msg) {
+		Bukkit.getLogger().info("[" + getName() + "] " + msg);
+	}
 
-	protected final String getConfigPath() {
-		return getName() + ".config." + getFeatureName().replaceAll(" ", "");
+	protected final void logSevere(String msg) {
+		Bukkit.getLogger().severe("[" + getName() + "] " + msg);
+	}
+
+	protected final void logWarn(String msg) {
+		Bukkit.getLogger().warning("[" + getName() + "] " + msg);
+	}
+	
+	protected JavaPluginCommandList[] getCommands() {
+		return new JavaPluginCommandList[0];
 	}
 
 	protected Listener[] getEventHandlers() {
 		return new Listener[] { this };
 	}
 
-	protected final ConfigurationSection getFeatureConfig() {
-		if (!getPlugin().getConfig().contains(getConfigPath())) {
-			getPlugin().getConfig().createSection(getConfigPath());
-		}
-		return getPlugin().getConfig().getConfigurationSection(getConfigPath());
-	}
-
-	protected void setFeatureName(String str) {
-		this.name = str;
-	}
-
-	public String getFeatureName() {
-		return name;
-	}
-
-	protected JavaPlugin getPlugin() {
-		return this;
-	}
-
-	public boolean initalize() {
+	protected boolean startup() {
 		return true;
 	}
-
-	protected void loadConfig() {
-
+	
+	protected void shutdown() {
+		
 	}
 
-	protected void logInfo(String msg) {
-		Bukkit.getLogger().info("[" + getPlugin().getName() + "] " + msg);
-	}
+	public abstract int getRequiredMajorVersion();
 
-	protected void logSevere(String msg) {
-		Bukkit.getLogger().severe("[" + getPlugin().getName() + "] " + msg);
-	}
-
-	protected void logWarn(String msg) {
-		Bukkit.getLogger().warning("[" + getPlugin().getName() + "] " + msg);
-	}
-
-	public void shutdown() {
-		saveConfig();
-	}
-
-	public abstract int getMinimumMajorVersion();
-
-	public abstract int getMinimumMinorVersion();
-
-	public int getAPIMajorVersion() {
-		return MAJOR_VERSION;
-	}
-
-	public int getAPIMinorVersion() {
-		return MINOR_VERSION;
-	}
+	public abstract int getRequiredMinorVersion();
 }

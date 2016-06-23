@@ -1,4 +1,4 @@
-package io.github.robotman3000.bukkit.multiworld;
+package io.github.robotman3000.bukkit.spigotplus.api;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World.Environment;
 
-public class CommonLogic {
+public class JavaPluginUtil {
 
     public static void dirDelete(File file) throws IOException {
         if (file.isDirectory()) {
@@ -21,7 +21,7 @@ public class CommonLogic {
                 String files[] = file.list();
 
                 for (String temp : files) {
-                    CommonLogic.dirDelete(new File(file, temp));
+                    JavaPluginUtil.dirDelete(new File(file, temp));
                 }
 
                 if (file.list().length == 0) {
@@ -61,14 +61,16 @@ public class CommonLogic {
     }
 
     public static ChatColor printEnvColor(Environment environment) {
-        if (environment.equals(Environment.NORMAL)) {
+    	switch(environment){
+    	case NORMAL:
             return ChatColor.GREEN;
-        } else if (environment.equals(Environment.NETHER)) {
+    	case NETHER:
             return ChatColor.RED;
-        } else if (environment.equals(Environment.THE_END)) {
+    	case THE_END:
             return ChatColor.BLACK;
+        default:
+        	return ChatColor.WHITE;
         }
-        return ChatColor.WHITE;
     }
 
     public static void saveJsonAsFile(File theJsonFile, String fileContents) {
