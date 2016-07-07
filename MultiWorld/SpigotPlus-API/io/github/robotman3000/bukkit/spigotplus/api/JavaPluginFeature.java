@@ -36,7 +36,7 @@ public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 	        }
 	        
 	        saveDefaultConfig();
-			if(!(loadFailed = startup())){
+			if((loadFailed = !startup())){
 				logWarn("Failed to startup!!");
 			}
 		}

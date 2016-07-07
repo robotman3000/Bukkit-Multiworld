@@ -1,6 +1,6 @@
 name: SpigotPlus-API
 main: io.github.robotman3000.bukkit.spigotplus.api.ignore.Main
-version: 1.0.0
+version: 1.0
 description: The core API used by all my SpigotPlus features
 author: robotman3001
 website: https://github.com/robotman3000/Spigot-Plus
