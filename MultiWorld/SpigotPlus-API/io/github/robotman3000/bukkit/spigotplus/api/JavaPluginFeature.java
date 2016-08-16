@@ -1,17 +1,24 @@
 package io.github.robotman3000.bukkit.spigotplus.api;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 
-	public static int API_MAJOR_VERSION = 1;
-	public static int API_MINOR_VERSION = 0;
+	public static final int API_MAJOR_VERSION = 1;
+	public static final int API_MINOR_VERSION = 0;
 	private boolean loadFailed = false;
-
+	
+	private final UUID pluginInstanceID = UUID.randomUUID();
+	
+	public final UUID getInstanceID(){
+		return pluginInstanceID;
+	}
+	
 	@Override
 	public final void onEnable() {
 		if (API_MAJOR_VERSION < getRequiredMajorVersion()) {
@@ -50,6 +57,7 @@ public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 	public final void onDisable() {
 		if (!loadFailed) {
 			shutdown();
+			saveConfig();
 		}
 	}
 	
