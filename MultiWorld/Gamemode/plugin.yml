@@ -1,3 +1,11 @@
 name: SpigotPlus-Gamemode
 main: io.github.robotman3000.bukkit.multiworld.gamemode.GamemodeManager
-version: 0.2.1-SNAPSHOT
+version: 1.0
+description: A plugin to allow per world gamemode management
+author: robotman3001
+website: https://github.com/robotman3000/Spigot-Plus
+depend: [SpigotPlus-API]
+permissions:
+  spigotplus.gamemode.exempt:
+    description: Causes a player to be exempt from game mode forcing
+    default: op

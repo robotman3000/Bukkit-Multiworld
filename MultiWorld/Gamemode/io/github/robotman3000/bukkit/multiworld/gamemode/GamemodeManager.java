@@ -9,9 +9,9 @@ import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
@@ -20,43 +20,27 @@ public class GamemodeManager extends JavaPluginFeature {
 
     private final HashMap<String, GameMode> gamemodes = new HashMap<>();
 
-    public GamemodeManager() {
-        setFeatureName("Gamemode Manager");
-    }
-
     private void forceGamemode(PlayerEvent evt) {
-        logInfo("Forcing Gamemode");
-        if (!evt.getPlayer().hasPermission("multiworld.gamemodeExempt")) {
-            GameMode gamemode = gamemodes.get(evt.getPlayer().getWorld().getName());
-            if (gamemode == null) {
-                gamemode = Bukkit.getDefaultGameMode();
-            }
+        if (!evt.getPlayer().hasPermission("spigotplus.gamemode.exempt")) {
+            GameMode gamemode = getWorldGamemode(evt.getPlayer().getWorld().getName());
             if (!evt.getPlayer().getGameMode().equals(gamemode)) {
                 evt.getPlayer().setGameMode(gamemode);
-            } else {
-                logInfo("No gamemode change needed");
             }
-        } else {
-            logInfo("Player is exempt from gamemode force");
         }
     }
 
-    @Override
-    public boolean initalize() {
-        logInfo("Registering Event Handlers");
-        for (Listener evt : getEventHandlers()) {
-            getPlugin().getServer().getPluginManager().registerEvents(evt, getPlugin());
+    private synchronized GameMode getWorldGamemode(String worldName){
+        GameMode gamemode = gamemodes.get(worldName);
+        if (gamemode == null) {
+            gamemode = Bukkit.getDefaultGameMode();
         }
-        logInfo("Loading Config");
-        loadConfig();
-        return true;
+        return gamemode;
     }
-
-    @Override
+    
     protected void loadConfig() {
         String path = "gamemode";
         for (GameMode gamemode : GameMode.values()) {
-            List<String> list = getFeatureConfig().getStringList(path + "." + gamemode.name());
+            List<String> list = getConfig().getStringList(path + "." + gamemode.name());
             if (list != null) {
                 for (String str : list) {
                     GameMode game = gamemodes.put(str, gamemode);
@@ -79,8 +63,30 @@ public class GamemodeManager extends JavaPluginFeature {
         forceGamemode(evt);
     }
 
-    @Override
-	public void saveConfig() {
+    @EventHandler
+    public void onGamemodeChange(PlayerGameModeChangeEvent event){
+    	GameMode newMode = event.getNewGameMode();
+    	String worldName = event.getPlayer().getWorld().getName();
+    	if(!event.getPlayer().hasPermission("spigotplus.gamemode." + worldName + "." + newMode)){
+    		boolean modeFound = false;
+    		for(GameMode mode : GameMode.values()){
+    			if(event.getPlayer().hasPermission("spigotplus.gamemode." + worldName + "." + mode)){
+    				modeFound = true;
+    				break;
+    			}
+    		}
+
+    		event.setCancelled(true);
+    		event.getPlayer().sendMessage("You are not permitted to use the " + newMode + " gamemode in this world");
+    		
+    		if(!modeFound){
+    			logWarn("The player " + event.getPlayer().getName() + " is not permitted to use any gamemode in the world \"" + worldName + "\"");
+    			event.getPlayer().kickPlayer("There is a configuration error with the gamemodes you are permitted to use. Please contact the server administrator");
+    		}
+    	}
+    }
+
+	public void saveConfigValues() {
         HashMap<GameMode, List<String>> config = new HashMap<GameMode, List<String>>();
         for (GameMode gamemode : GameMode.values()) {
             config.put(gamemode, new ArrayList<String>());
@@ -98,23 +104,28 @@ public class GamemodeManager extends JavaPluginFeature {
 
         }
         for (GameMode gamemode : config.keySet()) {
-            getFeatureConfig().set("gamemode." + gamemode.name(), config.get(gamemode));
+            getConfig().set("gamemode." + gamemode.name(), config.get(gamemode));
         }
     }
 
     @Override
     public void shutdown() {
-        logInfo("Shutting Down...");
-        saveConfig();
+        saveConfigValues();
     }
 
+    @Override
+    protected boolean startup() {
+    	loadConfig();
+    	return true;
+    }
+    
 	@Override
-	public int getMinimumMajorVersion() {
-		return 2;
+	public int getRequiredMajorVersion() {
+		return 1;
 	}
 
 	@Override
-	public int getMinimumMinorVersion() {
+	public int getRequiredMinorVersion() {
 		return 0;
 	}
 }
