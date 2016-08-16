@@ -1,12 +1,23 @@
 package io.github.robotman3000.bukkit.multiworld.world;
 
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldConfirmCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldCreateCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldDeleteCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldGameruleCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldGotoCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldInfoCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldListCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldLoadCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldPropertyCommand;
+import io.github.robotman3000.bukkit.multiworld.world.command.WorldUnloadCommand;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommand;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommandList;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
+
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,43 +25,30 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 
-import io.github.robotman3000.bukkit.multiworld.world.command.GameruleCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.GenerateWorldCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.GotoCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.ListWorldsCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.UnloadWorldCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldCreateCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldDeleteCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldInfoCommand;
-import io.github.robotman3000.bukkit.multiworld.world.command.WorldPropertyCommand;
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommand;
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 public class WorldManager extends JavaPluginFeature {
 
-    private enum Commands implements JavaPluginCommand {
-        createworld (new WorldCreateCommand()),
-        deleteworld (new WorldDeleteCommand()),
-        generateworld (new GenerateWorldCommand()),
-        unloadworld (new UnloadWorldCommand()),
+    private enum Commands implements JavaPluginCommandList {
+    	worldconfirm (new WorldConfirmCommand()),
+        worldcreate (new WorldCreateCommand()),
+        worlddelete (new WorldDeleteCommand()),
+        worldload (new WorldLoadCommand()),
+        worldunload (new WorldUnloadCommand()),
         worldinfo (new WorldInfoCommand()),
-        listworlds (new ListWorldsCommand()),
-        gamerule (new GameruleCommand()),
+        worldlist (new WorldListCommand()),
+        worldgamerule (new WorldGameruleCommand()),
         worldproperty (new WorldPropertyCommand()),
-        Goto (new GotoCommand());
+        worldgoto (new WorldGotoCommand());
 
-    	CommandExecutor command;
-    	TabCompleter tabCompleter;
+    	private JavaPluginCommand command;
     	
-    	private Commands(Object obj) {
-			command = (CommandExecutor) obj;
-			tabCompleter = (TabCompleter) obj;
+    	private Commands(JavaPluginCommand obj) {
+    		this.command = obj;
 		}
     	
         @Override
@@ -60,149 +58,111 @@ public class WorldManager extends JavaPluginFeature {
 
         @Override
         public TabCompleter getTabCompleter(){
-        	return tabCompleter;
+        	return command;
         }
     }
 
-    public boolean autoLoadWorlds;
-	private boolean appendWorldInChat;
+    private boolean autoLoadWorlds;
+	private boolean safeSpawnMode;
+	private long confirmWaitDuration;
 	
-	public WorldManager() {
-		setFeatureName("World Manager");
-	}
-
-    @Override
-    public void loadConfig() {
-        logInfo("Loading World Configuration");
-        appendWorldInChat = getFeatureConfig().getBoolean("appendWorldInChat", true);
-        autoLoadWorlds = getFeatureConfig().getBoolean("autoLoadWorlds", false);
-        List<String> worldList = getFeatureConfig().getStringList("worlds");
-
-        if (worldList != null) {
-            for (File file : Bukkit.getWorldContainer().listFiles()) {
-                skipWorld: if (WorldManagerHelper.isWorldFolder(file)) {
-                    logInfo("Found world " + file.getName());
-                    if (autoLoadWorlds) {
-                        if (worldList.contains(file.getName())) { // If pending world is in list
-                                                                  // then
-                                                                  // skip loading it
-                            logInfo("World is listed in config; Skipping world " + file.getName());
-                            break skipWorld;
-                        }
-
-                        WorldManagerHelper.loadWorld(file);
-                    } else {
-                        // Only load world if in worldList
-                        if (worldList.contains(file.getName())) {
-                            logInfo("World is listed in config; Loading world " + file.getName());
-                            WorldManagerHelper.loadWorld(file);
-                        }
-                    }
-                }
-            }
-        }
-        if (worldList.size() == 0) {
-            getFeatureConfig().set("worlds", new ArrayList<String>());
-        }
-        logInfo("Finished Loading Configuration");
-    }
-
-
-	@EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent evt) {
-        // TODO: Make this more persistent in finding a safe spawn location
-        if (!evt.isBedSpawn()) {
-            Location loc = WorldManagerHelper.isLocationSafe(evt.getRespawnLocation());
-            if (loc != null) {
-                evt.setRespawnLocation(loc);
-            } else {
-                evt.getPlayer()
-                        .sendMessage(ChatColor.RED
-                                             + "Warning: Unable to find safe spawn location. You may spawn in a block");
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent evt) {
-        if (appendWorldInChat) {
-            String message = evt.getMessage();
-            evt.setMessage("[" + evt.getPlayer().getWorld().getName() + "] " + message);
-        }
-    };
-    
     @EventHandler
     public void onWorldInit(WorldInitEvent evt) {
-        Location loc = WorldManagerHelper.isLocationSafe(evt.getWorld().getSpawnLocation());
-        if (loc != null) {
-            if (!evt.getWorld().getSpawnLocation().equals(loc)) {
-                logInfo("Spawn location of " + evt.getWorld().getName() + " wasn't safe");
-                logInfo("Spawn location was " + evt.getWorld().getSpawnLocation());
-                logInfo("Spawn changed to " + loc);
-                evt.getWorld().setSpawnLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-            }
-        }
-        
-    	World world = evt.getWorld();
-    	File folder = world.getWorldFolder();
-    	Properties worldProps = new Properties();
-    	worldProps.setProperty("seed", String.valueOf(world.getSeed()));
-    	worldProps.setProperty("type", world.getWorldType().name());
-    	worldProps.setProperty("enviroment", world.getEnvironment().name());
-    	worldProps.setProperty("generateStructures", String.valueOf(world.canGenerateStructures()));
-    	try {
-			worldProps.store(new FileWriter(new File(folder, "world.properties")), "Don't delete this file!");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	if(safeSpawnMode){
+    		Location spawn = WorldManagerHelper.getSafestSpawnPoint(evt.getWorld());
+    		evt.getWorld().setSpawnLocation(spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ());
+    		logInfo("Safe Spawn: Updated spawn location " + spawn);
+    	}
+        WorldManagerHelper.saveWorldConfig(evt.getWorld());
     }
 
     @EventHandler
     public void onWorldUnload(WorldUnloadEvent event){
-    	World world = event.getWorld();
-    	File folder = world.getWorldFolder();
-    	Properties worldProps = new Properties();
-    	worldProps.setProperty("seed", String.valueOf(world.getSeed()));
-    	worldProps.setProperty("type", world.getWorldType().name());
-    	worldProps.setProperty("enviroment", world.getEnvironment().name());
-    	worldProps.setProperty("generateStructures", String.valueOf(world.canGenerateStructures()));
-    	try {
-			worldProps.store(new FileWriter(new File(folder, "world.properties")), "Don't delete this file!");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	WorldManagerHelper.saveWorldConfig(event.getWorld());
+    }
+    
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerTeleportEvent event){
+    	World from = event.getFrom().getWorld();
+    	World to = event.getTo().getWorld();
+    	
+    	if(!from.getUID().equals(to.getUID())){
+    		Player player = event.getPlayer();
+    		
+    		if(player.hasPermission("spigotplus.multiworld.leave." + from.getName())){
+    			if(player.hasPermission("spigotplus.multiworld.enter." + to.getName())){
+    				// We don't set the event to be "uncanceled" to avoid interfering with
+    				// the work of other plugins, as we don't care what happens to the event
+    				// provided that by our books it is allowed.
+    				return;
+    			} else {
+    				player.sendMessage(ChatColor.RED + "You are not permitted to enter this world.");
+    			}
+    		} else {
+    			player.sendMessage(ChatColor.RED + "You are not permitted to leave this world.");
+    		}
+    		//event.setTo(event.getFrom());
+    		event.setCancelled(true);
+    	}
+    }
+    
+    public void loadConfig() {
+        autoLoadWorlds = getConfig().getBoolean(ConfigKeys.autoLoadWorlds.name(), false);
+        safeSpawnMode = getConfig().getBoolean(ConfigKeys.enableSafeSpawnMode.name(), true);
+        confirmWaitDuration = getConfig().getLong(ConfigKeys.confirmTimeout.name(), 10);
+        WorldManagerHelper.confirmTimeout = confirmWaitDuration;
+        List<String> worldList = getConfig().getStringList(ConfigKeys.worlds.name());
+
+        if (worldList != null) {
+            for (File file : Bukkit.getWorldContainer().listFiles()) {
+                if (WorldManagerHelper.isWorldFolder(file)) {
+                    logInfo("Found world " + file.getName());
+                    if(autoLoadWorlds || worldList.contains(file.getName())){
+                    	WorldManagerHelper.loadWorld(file);
+                    }
+                }
+            }
+        }
+
+        if (worldList == null || worldList.isEmpty()) {
+            getConfig().set(ConfigKeys.worlds.name(), new ArrayList<String>());
+        }
+    }
+    
+    public void saveConfigValues() {
+        getConfig().set(ConfigKeys.autoLoadWorlds.name(), autoLoadWorlds);
+        getConfig().set(ConfigKeys.enableSafeSpawnMode.name(), safeSpawnMode);
+        getConfig().set(ConfigKeys.confirmTimeout.name(), confirmWaitDuration);
+        List<String> worldList = getConfig().getStringList(ConfigKeys.worlds.name());
+        if(worldList == null){
+        	List<String> list = Collections.emptyList();
+        	getConfig().set(ConfigKeys.worlds.name(), list);
+        }
     }
     
     @Override
-    public void saveConfig() {
-    	logInfo("Saving World Configuration");
-    	getFeatureConfig().set("appendWorldInChat", appendWorldInChat);
-        getFeatureConfig().set("autoLoadWorlds", autoLoadWorlds);
-        List<String> worldList = getFeatureConfig().getStringList("worlds");
-        if(worldList == null){
-        	List<String> list = Collections.emptyList();
-        	getFeatureConfig().set("worlds", list);
-        }
-        logInfo("Finished Saving Configuration");
+    protected boolean startup() {
+    	loadConfig();
+    	return true;
     }
 
     @Override
     public void shutdown() {
-        saveConfig();
+        saveConfigValues();
     }
 
 	@Override
-	public int getMinimumMajorVersion() {
-		return 2;
-	}
-
-	@Override
-	public int getMinimumMinorVersion() {
+	public int getRequiredMajorVersion() {
 		return 1;
 	}
 
 	@Override
-	protected JavaPluginCommand[] getCommands() {
+	public int getRequiredMinorVersion() {
+		return 0;
+	}
+
+	@Override
+	protected JavaPluginCommandList[] getCommands() {
 		return Commands.values();
 	}
 }

@@ -2,7 +2,7 @@ package io.github.robotman3000.bukkit.multiworld.world;
 
 import org.bukkit.World;
 
-public enum WorldPropertyList {
+public enum WorldPropertyList implements PropertyList {
     Difficulty {
         @Override
         public String getPropertyValue(World world) {
@@ -79,8 +79,4 @@ public enum WorldPropertyList {
             return true;
         }
     };
-
-    public abstract String getPropertyValue(World world);
-
-    public abstract boolean setPropertyValue(World world, String newValue);
 }

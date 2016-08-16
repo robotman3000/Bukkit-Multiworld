@@ -1,0 +1,7 @@
+autoLoadWorlds: false
+enableSafeSpawnMode: false
+confirmTimeout: 5000
+worlds:
+  - world
+  - world_nether
+  - world_the_end
