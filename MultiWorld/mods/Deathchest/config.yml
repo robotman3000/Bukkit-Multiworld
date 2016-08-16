@@ -1,0 +1,4 @@
+attemptDoubleChest: false
+generateChest: false
+useInventoryChest: true
+reportChestLocation: true
