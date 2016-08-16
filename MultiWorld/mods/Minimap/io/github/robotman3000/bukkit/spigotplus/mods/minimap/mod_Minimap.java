@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,22 +21,6 @@ public class mod_Minimap extends JavaPluginFeature implements Listener {
 
 	private List<MapState> knownMaps = new ArrayList<>();
 	private MinimapRenderer renderer = new MinimapRenderer(Collections.unmodifiableList(knownMaps), true); 
-	
-	public mod_Minimap() {
-		setFeatureName("Minimap Mod");
-	}
-
-	@Override
-	public boolean initalize() {
-		Bukkit.getLogger().info("Starting the minimap mod");
-		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
-		return true;
-	}
-	
-	@Override
-	public String getFeatureName() {
-		return "Minimap Mod";
-	}
 	
 	@EventHandler
 	public void onPlayerHotbarChange(PlayerItemHeldEvent event){
@@ -75,12 +58,12 @@ public class mod_Minimap extends JavaPluginFeature implements Listener {
 	}
 	
 	@Override
-	public int getMinimumMajorVersion() {
-		return 2;
+	public int getRequiredMajorVersion() {
+		return 1;
 	}
 
 	@Override
-	public int getMinimumMinorVersion() {
+	public int getRequiredMinorVersion() {
 		return 0;
 	}
 }

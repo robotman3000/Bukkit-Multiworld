@@ -159,22 +159,22 @@ public class MinimapRenderer extends MapRenderer {
 			for(int xIndex = firstBlockX, arrayX = 0; xIndex < (firstBlockX + blocksPerPixel); xIndex++, arrayX++){
 				
 				int colorIndex = 0;
-				int colorMod = 1;
-				int blockY = MAX_WORLD_HEIGHT;
-				while(blockY > -1){
+				int colorMod = 0;
+				int blockY = -1;
+				while(blockY < MAX_WORLD_HEIGHT){
 					Block block = world.getBlockAt(xIndex, blockY, zIndex);
 					if(!block.isEmpty()){
 						colorIndex = BlockMaterialColorMapping.getBlockForID(block.getType().getId()).getColorIndex();
 						if(lastY > blockY){
 							colorMod = 2;
 						} else if (lastY < blockY){
-							colorMod = 0;
+							colorMod = 1;
 						}
 						break;
 					}
 					//Bukkit.getLogger().info(lastY + " " + blockY);
 					lastY = blockY;
-					blockY--;
+					blockY++;
 				}
 				int index = (colorIndex * 4) + colorMod;
 				blocksForPixel[arrayX][arrayZ] = (byte) (index < 128 ? index : -129 + (index - 127));
