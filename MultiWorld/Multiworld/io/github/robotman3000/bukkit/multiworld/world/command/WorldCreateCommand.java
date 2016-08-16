@@ -35,7 +35,6 @@ public class WorldCreateCommand extends JavaPluginCommand {
 				sender.sendMessage(ChatColor.RED + "Too many arguments were provided!");
 			} else {
 				for(int index = (args.length - 1); index > -1; index--){
-					// TODO: If invalid enum values are passed in we must send the player an error message
 					Object obj = getParameters().get(index).getParameterValue(args[index]);
 					if(obj != null){
 						params[index] = obj;
