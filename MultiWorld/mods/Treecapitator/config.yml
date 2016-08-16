@@ -1,0 +1,8 @@
+maxBlocks: 96
+shouldBeSneaking: true
+minRemainingDurability: 2
+chargeDurability: true
+chargeDurabilityCreative: false
+axeItems:
+- STONE_AXE
+- WOOD_AXE
