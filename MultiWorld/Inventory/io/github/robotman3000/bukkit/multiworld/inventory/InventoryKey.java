@@ -34,7 +34,6 @@ public class InventoryKey {
 
     @Override
     public boolean equals(Object obj) {
-        InventoryContainer.bool = true;
         // Bukkit.getLogger().info("[SpigotPlus] DWN: <" + Thread.currentThread().getName()
         // + "> IK.equals{" + obj.hashCode() + "} "
         // + InventoryContainer.bool);
