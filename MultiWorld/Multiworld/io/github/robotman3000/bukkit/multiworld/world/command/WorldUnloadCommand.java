@@ -16,7 +16,6 @@ public class WorldUnloadCommand extends JavaPluginCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		//TODO: Test if world is already unloaded
         if (args.length > 0) {
             World world = Bukkit.getWorld(args[0]);
             if (world != null) {
@@ -29,6 +28,8 @@ public class WorldUnloadCommand extends JavaPluginCommand {
             	} else {
             		sender.sendMessage(ChatColor.RED + "You are not permitted to unload that world");
             	}
+            } else {
+            	sender.sendMessage(ChatColor.RED + "That world is already unloaded or it doesn't exist");
             }
         } else {
         	sender.sendMessage(ChatColor.RED + "You must provide a world name");
