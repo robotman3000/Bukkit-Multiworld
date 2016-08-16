@@ -169,8 +169,24 @@ public class WorldManagerHelper {
 				}
 			}
 		}
-		//TODO: Make a safe spot to spawn in since a safe one couldn't be found
-		Bukkit.getLogger().warning(ChatColor.RED + "Safe Spawn: No safe location was found!!");
+		
+		
+		Block start = spawn.getBlock();
+		if(!start.getType().isSolid()){
+			start.setType(Material.STONE);
+		}
+		
+		Block block = world.getBlockAt(spawn.add(0, 1, 0));
+		if(!block.getType().isTransparent()){
+			block.setType(Material.AIR, false);
+		}
+		
+		block = world.getBlockAt(spawn.add(0, 2, 0));
+		if(!block.getType().isTransparent()){
+			block.setType(Material.AIR, false);
+		}
+		
+		//Bukkit.getLogger().warning(ChatColor.RED + "Safe Spawn: No safe location was found!!");
 		return spawn;
 	}
 
