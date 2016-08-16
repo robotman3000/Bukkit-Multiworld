@@ -36,7 +36,13 @@ public class WorldCreateCommand extends JavaPluginCommand {
 			} else {
 				for(int index = (args.length - 1); index > -1; index--){
 					// TODO: If invalid enum values are passed in we must send the player an error message
-					params[index] = getParameters().get(index).getParameterValue(args[index]);
+					Object obj = getParameters().get(index).getParameterValue(args[index]);
+					if(obj != null){
+						params[index] = obj;
+					} else {
+						sender.sendMessage(ChatColor.RED + "Invalid parameter supplied at index " + index);
+						return false;
+					}
 				}
 			
 	            if(!WorldManagerHelper.isWorldFolder(new File(Bukkit.getWorldContainer(), (String) params[0]))){
