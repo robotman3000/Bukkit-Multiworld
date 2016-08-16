@@ -31,7 +31,12 @@ public class EnumParameter<T extends Enum<T>> extends CommandParameter<T> {
 
 	@Override
 	public List<String> getTabCompletions(CommandSender sender, String arg) {
-		// TODO: make this complete partial strings
+		List<String> list = new ArrayList<String>();
+    	for (String value : tabCompletes){
+    		if(value.startsWith(arg)){
+    			list.add(value);
+    		}
+    	}
 		return tabCompletes;
 	}
 }
