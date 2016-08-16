@@ -42,12 +42,16 @@ public class WorldManagerHelper {
                 "PVP Enabled: " + world.getPVP(),
                 "Autosave Enabled: " + world.isAutoSave(),
                 "Spawn Location: " + world.getSpawnLocation(),
-                "Gamerules: " + printGamerules(world) };
+                "Gamerules: " + Arrays.asList(printGamerules(world)) };
     }
 
-	private static String printGamerules(World world) {
-		// TODO Print the gamerules
-		return null;
+	private static String[] printGamerules(World world) {
+		String[] string = world.getGameRules();
+		for(int index = 0; index < string.length; index++){
+			String oldValue = string[index];
+			string[index] = oldValue + " = " + world.getGameRuleValue(oldValue);
+		}
+		return string;
 	}
 
 	public static Location isLocationSafe(Location loc) {
