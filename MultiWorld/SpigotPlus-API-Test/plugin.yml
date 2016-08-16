@@ -1,0 +1,11 @@
+name: SpigotPlus-API-Test
+main: io.github.robotman3000.spigotplus.api.test.Main
+version: 1.0
+depend: [SpigotPlus-API]
+commands:
+   testcommand:
+      description: A command to test the command api's parameter system
+      usage: /<command> <Test Enum Value>
+      permission: spigotplus.apitest.command.test
+      permission-message: You don't have <permission>
+   
