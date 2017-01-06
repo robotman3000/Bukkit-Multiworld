@@ -1,6 +1,5 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommandList;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 import java.util.HashMap;
@@ -9,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,26 +17,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class InventoryManager extends JavaPluginFeature {
-
+	//TODO: Make it so that Creative mode in one world and Survival in another share an inventory
+	//TODO: Make it so that if two worlds have the same name the inventories won't be shared
+	
+	// listgroups, addgroup, delgroup, setgroup, getgroup, renamegroup, addgamemode, delgamemode
+	
     private final InventoryContainer invs = new InventoryContainer(this);
     private final Map<String, WorldGroup> worldGroups = new HashMap<>();
-    
-    public enum Commands implements JavaPluginCommandList{
-		;
-
-		@Override
-		public CommandExecutor getExecutor() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public TabCompleter getTabCompleter() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-    	
-    }
     
     private String getGroupName(String name) {
         for (String worldGroupName : worldGroups.keySet()) {
@@ -110,10 +94,12 @@ public class InventoryManager extends JavaPluginFeature {
 
         for (String groupKey : groupKeys) {
             String path = "groups." + groupKey;
-            List<String> worlds = getConfig().getStringList(path + ".worlds");
+            WorldKey key = (WorldKey) getConfig().get(path);
+
+            
             logInfo("Group: " + groupKey + " has " + worlds);
 
-            WorldGroup wGroup = new WorldGroup(groupKey, worlds);
+            WorldGroup wGroup = new WorldGroup(groupKey, key);
             worldGroups.put(groupKey, wGroup);
         }
     }
@@ -121,18 +107,17 @@ public class InventoryManager extends JavaPluginFeature {
 	public void saveConfigValues() {
         invs.saveInventoryConfig();
         // Save the world groups and gamemode settings
-        HashSet<String> knownWorlds = new HashSet<>();
         for (String groupkey : worldGroups.keySet()) {
             String path = "groups." + groupkey;
             WorldGroup group = worldGroups.get(groupkey);
             getConfig().set(path + ".worlds", group.getWorlds());
-            knownWorlds.addAll(group.getWorlds());
         }
     }
 
     @Override
     public boolean startup() {
         ConfigurationSerialization.registerClass(PlayerInventory.class);
+        ConfigurationSerialization.registerClass(WorldKey.class);
         loadConfig();
         return true;
     }
@@ -141,11 +126,7 @@ public class InventoryManager extends JavaPluginFeature {
     public void shutdown() {
         saveConfigValues();
         ConfigurationSerialization.unregisterClass(PlayerInventory.class);
-    }
-    
-    @Override
-    protected JavaPluginCommandList[] getCommands() {
-    	return Commands.values();
+        ConfigurationSerialization.unregisterClass(WorldKey.class);
     }
     
 	@Override

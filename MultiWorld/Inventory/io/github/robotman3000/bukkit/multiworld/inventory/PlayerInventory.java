@@ -1,8 +1,10 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -23,197 +25,271 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setAllowFlight((boolean) inventory.getData()[ordinal()]);
+				player.setAllowFlight((boolean) getPropertyFromInventory(inventory));
 
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getAllowFlight();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getAllowFlight();
+			}
 
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		BED_SPAWN_POINT {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setBedSpawnLocation((Location) inventory.getData()[ordinal()]);
+				player.setBedSpawnLocation((Location) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getBedSpawnLocation();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getBedSpawnLocation();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		COMPASS_TARGET {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setCompassTarget((Location) inventory.getData()[ordinal()]);
+				player.setCompassTarget((Location) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getCompassTarget();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getCompassTarget();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		DISPLAY_NAME {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setDisplayName((String) inventory.getData()[ordinal()]);
+				player.setDisplayName((String) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getDisplayName();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getDisplayName();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		EXHAUSTION {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setExhaustion((float) inventory.getData()[ordinal()]);
+				player.setExhaustion(getAsFloat(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getExhaustion();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getExhaustion();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		XP_POINTS {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setExp((float) inventory.getData()[ordinal()]);
+				player.setExp(getAsFloat(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getExp();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getExp();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		FALL_DISTANCE {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setFallDistance((float) inventory.getData()[ordinal()]);
+				player.setFallDistance(getAsFloat(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getFallDistance();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getFallDistance();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		FIRE_TICKS {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setFireTicks((int) inventory.getData()[ordinal()]);
+				player.setFireTicks((int) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getFireTicks();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getFireTicks();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		IS_FLYING {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setFlying((boolean) inventory.getData()[ordinal()]);
+				player.setFlying((boolean) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.isFlying();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.isFlying();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		FOOD_LEVEL {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setFoodLevel((int) inventory.getData()[ordinal()]);
+				player.setFoodLevel((int) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getFoodLevel();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getFoodLevel();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		HEALTH_POINTS {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setHealth((double) inventory.getData()[ordinal()]);
+				player.setHealth((double) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getHealth();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getHealth();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		XP_LEVEL {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setLevel((int) inventory.getData()[ordinal()]);
+				player.setLevel((int) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getLevel();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getLevel();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		REMAINING_AIR {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setRemainingAir((int) inventory.getData()[ordinal()]);
+				player.setRemainingAir((int) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getRemainingAir();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getRemainingAir();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		FOOD_SATURATION {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setSaturation((float) inventory.getData()[ordinal()]);
+				player.setSaturation(getAsFloat(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getSaturation();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getSaturation();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		VELOCITY {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setVelocity((Vector) inventory.getData()[ordinal()]);
+				player.setVelocity((Vector) getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getVelocity();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getVelocity();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		ARMOR_CONTENTS {
@@ -221,14 +297,18 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
 				player.getInventory().setArmorContents(
-						(ItemStack[]) inventory.getData()[ordinal()]);
+						listToArray(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getInventory()
-						.getArmorContents();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getInventory().getArmorContents();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		INVENTORY_CONTENTS {
@@ -236,14 +316,18 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
 				player.getInventory().setContents(
-						(ItemStack[]) inventory.getData()[ordinal()]);
+						listToArray(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getInventory()
-						.getContents();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getInventory().getContents();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		ENDER_CHEST {
@@ -251,39 +335,82 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
 				player.getEnderChest().setContents(
-						(ItemStack[]) inventory.getData()[ordinal()]);
+						listToArray(getPropertyFromInventory(inventory)));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getEnderChest()
-						.getContents();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getEnderChest().getContents();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		},
 		PLAYER_LOCATION {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.teleport((Location) inventory.getData()[ordinal()]);
+				// player.teleport((Location)
+				// getPropertyFromInventory(inventory));
 			}
 
 			@Override
-			public void setPropertyFromPlayer(PlayerInventory inventory,
-					Player player) {
-				inventory.getData()[ordinal()] = player.getLocation();
+			public Object getPropertyFromPlayer(Player player) {
+				return player.getLocation();
+			}
+
+			@Override
+			protected Object getDefaultValue() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		};
 
-		protected void setProperty(Object[] values, Object value) {
+		private void setProperty(Object[] values, Object value) {
 			values[ordinal()] = value;
 		}
 
 		public abstract void setPropertyFromInventory(Player player,
 				PlayerInventory inventory);
 
-		public abstract void setPropertyFromPlayer(PlayerInventory inventory,
-				Player player);
+		public void setPropertyFromPlayer(PlayerInventory inventory,
+				Player player) {
+			inventory.getData()[ordinal()] = getPropertyFromPlayer(player);
+		}
+
+		public abstract Object getPropertyFromPlayer(Player player);
+
+		public Object getPropertyFromInventory(PlayerInventory inventory) {
+			return inventory.getData()[ordinal()];
+		}
+
+		protected abstract Object getDefaultValue();
+		
+		public void resetProperty(PlayerInventory inventory){
+			setProperty(inventory.getData(), getDefaultValue());
+		}
+
+		private static float getAsFloat(Object object) {
+			return Float.valueOf(String.valueOf(object));
+		}
+
+		private static ItemStack[] listToArray(Object object) {
+			if (object instanceof List) {
+				//Bukkit.getServer().getLogger().info("List");
+				List<?> obj = (List<?>) object;
+				return obj.toArray(new ItemStack[0]);
+			} else if (object instanceof ItemStack[]) {
+				//Bukkit.getServer().getLogger().info("ItemStack[]");
+				ItemStack[] obj = (ItemStack[]) object;
+				return obj;
+			}
+			//Bukkit.getServer().getLogger().info("None");
+			return null;
+		}
+
 	}
 
 	private PlayerInventory() {
@@ -310,6 +437,7 @@ public class PlayerInventory implements ConfigurationSerializable {
 
 	/**
 	 * Used to write the players inventory to a PlayerInventory object
+	 * 
 	 * @param player
 	 * @return
 	 */
@@ -323,6 +451,7 @@ public class PlayerInventory implements ConfigurationSerializable {
 
 	/**
 	 * Used to write the contents of a PlayerInventory to a player
+	 * 
 	 * @param player
 	 * @param inventory
 	 */

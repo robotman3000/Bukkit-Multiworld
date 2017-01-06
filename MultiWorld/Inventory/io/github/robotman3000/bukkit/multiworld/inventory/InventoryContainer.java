@@ -1,5 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.inventory;
 
+import io.github.robotman3000.bukkit.multiworld.inventory.PlayerInventory.InventoryProperties;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 import java.io.File;
@@ -110,6 +111,7 @@ public class InventoryContainer {
 	//TODO: move this functionality into PlayerInventory
     public static void zeroPlayerInventory(Player player, GameMode gameMode) {
         // TODO: Find out the proper default values
+    	
         // The player should be allowed to fly if in creative mode or spectator mode
         player.setAllowFlight((gameMode == GameMode.CREATIVE || gameMode == GameMode.SPECTATOR));
         player.setBedSpawnLocation(player.getWorld().getSpawnLocation());

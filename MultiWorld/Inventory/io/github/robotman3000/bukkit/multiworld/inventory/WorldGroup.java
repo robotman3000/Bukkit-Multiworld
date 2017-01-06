@@ -4,10 +4,10 @@ import java.util.List;
 
 public class WorldGroup {
 
-    private final List<String> worlds;
+    private final List<WorldKey> worlds;
     private final String name;
 
-    public WorldGroup(String name, List<String> worlds) {
+    public WorldGroup(String name, List<WorldKey> worlds) {
         this.name = name;
         this.worlds = worlds;
     }
@@ -16,7 +16,7 @@ public class WorldGroup {
         return name;
     }
 
-    public List<String> getWorlds() {
+    public List<WorldKey> getWorlds() {
         return worlds;
     }
 }

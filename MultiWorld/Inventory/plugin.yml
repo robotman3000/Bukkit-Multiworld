@@ -1,9 +1,3 @@
 name: SpigotPlus-Inventory
 main: io.github.robotman3000.bukkit.multiworld.inventory.InventoryManager
 version: 1.0
-commands:
-   inlist:
-      description: Debugging Command to list all inventories on the server. For Developers Only!
-      usage: /<command>
-      permission: multiworld.inventory.list
-      permission-message: You don't have <permission>
