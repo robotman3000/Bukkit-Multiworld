@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 public class mod_DeathChest extends JavaPluginFeature implements Listener {
-
+	//TODO: Make the generated chests disappear when items are collected
 	private boolean attemptDoubleChest;
 	private boolean generateChest;
 	private boolean useInventoryChest;

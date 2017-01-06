@@ -18,7 +18,7 @@ public class MapSection {
 		}
 	}
 	
-	public void setPixel(int x, int z, byte color){
+	public synchronized void setPixel(int x, int z, byte color){
 		if((x > -1 && x < 128 && z > -1 && z < 128)){
 			mapData[x][z] = color;
 		} else {
@@ -26,7 +26,7 @@ public class MapSection {
 		}
 	}
 	
-	public byte getPixel(int x, int z){
+	public synchronized byte getPixel(int x, int z){
 		if((x > -1 && x < 128 && z > -1 && z < 128)){
 			return mapData[x][z];
 		}

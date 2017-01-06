@@ -9,17 +9,26 @@ public class MapState {
 
 	private MapView map;
 	private Map<SectionIndex, MapSection> mapData = new HashMap<>();
-	private int lastSectionX = 0;
-	private int lastSectionZ = 0;
-	private int sectionX = 0;
-	private int sectionZ = 0;
+	private SectionIndex lastIndex = null;
+	private SectionIndex cachedIndex = null;
+	private MapSection cachedSection = null;
+	public int lastY;
+	public boolean exploreMode = true;
 	
 	public int getSectionX() {
-		return sectionX;
+		return (cachedIndex != null ? cachedIndex.getX() : 0);
 	}
 
 	public int getSectionZ() {
-		return sectionZ;
+		return (cachedIndex != null ? cachedIndex.getZ() : 0);
+	}
+	
+	public int getLastSectionX() {
+		return (lastIndex != null ? lastIndex.getX() : 0);
+	}
+	
+	public int getLastSectionZ() {
+		return (lastIndex != null ? lastIndex.getZ() : 0);
 	}
 
 	public MapState(MapView map) {
@@ -36,31 +45,22 @@ public class MapState {
 	}
 	
 	public MapSection getMapSection(int x, int z){
-		SectionIndex key = new SectionIndex(x, z);
-		MapSection section = mapData.get(key);
-		if(section == null){
-			section = new MapSection();
-			mapData.put(key, section);
+		MapSection section = cachedSection;
+		if(cachedIndex == null || !(cachedIndex.getX() == x && cachedIndex.getZ() == z)){
+			SectionIndex key = new SectionIndex(x, z);
+			section = mapData.get(key);
+			if(section == null){
+				section = new MapSection();
+				mapData.put(key, section);
+			}
 		}
 		return section;
 	}
 
-	public int getLastSectionX() {
-		return lastSectionX;
-	}
-
-	public void setSectionX(int lastSectionX) {
-		this.lastSectionX = this.sectionX;
-		this.sectionX = lastSectionX;
-	}
-
-	public int getLastSectionZ() {
-		return lastSectionZ;
-	}
-
-	public void setSectionZ(int lastSectionZ) {
-		this.lastSectionZ = this.sectionZ;
-		this.sectionZ = lastSectionZ;
+	public void setSection(int lastSectionX, int lastSectionZ) {
+		this.cachedSection = getMapSection(lastSectionX, lastSectionZ);
+		this.lastIndex = this.cachedIndex;
+		this.cachedIndex = new SectionIndex(lastSectionX, lastSectionZ);
 	}
 
 }

@@ -1,9 +1,11 @@
 package io.github.robotman3000.bukkit.spigotplus.mods.minimap;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,13 +16,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
-
 //TODO: Ensure that every map has our renderer
 public class mod_Minimap extends JavaPluginFeature implements Listener {
 
-	private List<MapState> knownMaps = new ArrayList<>();
-	private MinimapRenderer renderer = new MinimapRenderer(Collections.unmodifiableList(knownMaps), true); 
+	private Map<Short, MapState> knownMaps = new HashMap<>();
 	
 	@EventHandler
 	public void onPlayerHotbarChange(PlayerItemHeldEvent event){
@@ -28,33 +27,55 @@ public class mod_Minimap extends JavaPluginFeature implements Listener {
 		ItemStack item = player.getInventory().getItem(event.getNewSlot());
 		
 		if(item != null && item.getType() == Material.MAP){
-			for(MapState state : knownMaps){
-				if(item.getDurability() == state.getMapID()){
-					MapView map = state.getMapView();
-					boolean instanceMissing = true;
-					for(MapRenderer render : map.getRenderers()){
-						if(render instanceof MinimapRenderer){
-							instanceMissing = false;
-						}
+			MapState state = null;
+			boolean instanceMissing = true;
+			if((state = knownMaps.get(item.getDurability())) != null){
+				MapView map = state.getMapView();
+				
+				for(MapRenderer render : map.getRenderers()){
+					if(render instanceof MapWraper){
+						instanceMissing = false;
 					}
-					
-					if(instanceMissing){
-						logInfo("Map " + state.getMapID() + " did not have a Minimap Renderer");
-						map.getRenderers().add(renderer);
-					}
-					
-					player.sendMap(map);
-					break;
+				}
+			} else {
+				MapView map = Bukkit.getMap(item.getDurability());
+				if(map != null){
+					createNewMap(map);
+				} else {
+					logWarn("===========================================================================================");
+					logWarn("I'm confused. How can an item with the material of a map not be associated with a map view?");
+					logWarn("API methods used:");
+					logWarn("item.getType() == Material.MAP");
+					logWarn("MapView map = Bukkit.getMap(item.getDurability())");
+					logWarn("===========================================================================================");
 				}
 			}
+			
+			if(instanceMissing){
+				logInfo("Map " + (state != null ? state.getMapID() : item.getDurability()) + " did not have a Minimap Renderer");
+				state.getMapView().getRenderers().add(new MapWraper(state));
+			}
+			
+			player.sendMap(state.getMapView());
 		}
 	}
 	
 	@EventHandler
 	public void onMapInitialize(MapInitializeEvent event){
+		createNewMap(event.getMap());
+	}
+	
+	private void createNewMap(MapView map) {
 		// Every new map will get our renderer
-		event.getMap().addRenderer(renderer);
-		knownMaps.add(new MapState(event.getMap()));
+		//map.addRenderer(renderer);
+		
+		MapState mapState = new MapState(map);
+		map.addRenderer(new MapWraper(mapState));
+		knownMaps.put(map.getId(), mapState);
+	}
+
+	@Override
+	protected void shutdown() {
 	}
 	
 	@Override

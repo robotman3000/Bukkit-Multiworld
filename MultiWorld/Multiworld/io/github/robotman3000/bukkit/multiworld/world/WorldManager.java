@@ -33,6 +33,7 @@ import org.bukkit.event.world.WorldUnloadEvent;
 
 public class WorldManager extends JavaPluginFeature {
 
+	//TODO: Add world properties to enable/disable autoloading a world
     private enum Commands implements JavaPluginCommandList {
     	worldconfirm (new WorldConfirmCommand()),
         worldcreate (new WorldCreateCommand()),
