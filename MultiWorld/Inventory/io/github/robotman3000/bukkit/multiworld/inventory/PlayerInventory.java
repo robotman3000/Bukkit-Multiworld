@@ -33,47 +33,33 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getAllowFlight();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		BED_SPAWN_POINT {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setBedSpawnLocation((Location) getPropertyFromInventory(inventory));
+				if(getPropertyFromInventory(inventory) != null) {
+					player.setBedSpawnLocation((Location) getPropertyFromInventory(inventory));
+				}
 			}
 
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getBedSpawnLocation();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		COMPASS_TARGET {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setCompassTarget((Location) getPropertyFromInventory(inventory));
+				if(getPropertyFromInventory(inventory) != null) {
+					player.setCompassTarget((Location) getPropertyFromInventory(inventory));
+				}
 			}
 
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getCompassTarget();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		DISPLAY_NAME {
@@ -87,12 +73,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getDisplayName();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		EXHAUSTION {
 			@Override
@@ -104,12 +84,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getExhaustion();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		XP_POINTS {
@@ -123,12 +97,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getExp();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		FALL_DISTANCE {
 			@Override
@@ -140,12 +108,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getFallDistance();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		FIRE_TICKS {
@@ -159,12 +121,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getFireTicks();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		IS_FLYING {
 			@Override
@@ -176,12 +132,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.isFlying();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		FOOD_LEVEL {
@@ -195,12 +145,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getFoodLevel();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		HEALTH_POINTS {
 			@Override
@@ -212,12 +156,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getHealth();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		XP_LEVEL {
@@ -231,12 +169,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getLevel();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		REMAINING_AIR {
 			@Override
@@ -248,12 +180,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getRemainingAir();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		FOOD_SATURATION {
@@ -267,29 +193,19 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getSaturation();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		VELOCITY {
 			@Override
 			public void setPropertyFromInventory(Player player,
 					PlayerInventory inventory) {
-				player.setVelocity((Vector) getPropertyFromInventory(inventory));
+				if(getPropertyFromInventory(inventory) != null) {
+					player.setVelocity((Vector) getPropertyFromInventory(inventory));
+				}
 			}
 
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getVelocity();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		ARMOR_CONTENTS {
@@ -304,12 +220,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getInventory().getArmorContents();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		INVENTORY_CONTENTS {
 			@Override
@@ -322,12 +232,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			@Override
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getInventory().getContents();
-			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
 			}
 		},
 		ENDER_CHEST {
@@ -342,12 +246,6 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getEnderChest().getContents();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		},
 		PLAYER_LOCATION {
 			@Override
@@ -361,23 +259,19 @@ public class PlayerInventory implements ConfigurationSerializable {
 			public Object getPropertyFromPlayer(Player player) {
 				return player.getLocation();
 			}
-
-			@Override
-			protected Object getDefaultValue() {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		};
 
 		private void setProperty(Object[] values, Object value) {
-			values[ordinal()] = value;
+			if (!(values == null || value == null)) {
+				values[ordinal()] = value;
+			} else {
+				Bukkit.getLogger().info("PlayerInventory.class:setProperty(): Null value found");
+			}
 		}
 
-		public abstract void setPropertyFromInventory(Player player,
-				PlayerInventory inventory);
+		public abstract void setPropertyFromInventory(Player player, PlayerInventory inventory);
 
-		public void setPropertyFromPlayer(PlayerInventory inventory,
-				Player player) {
+		public void setPropertyFromPlayer(PlayerInventory inventory, Player player) {
 			inventory.getData()[ordinal()] = getPropertyFromPlayer(player);
 		}
 
@@ -387,10 +281,17 @@ public class PlayerInventory implements ConfigurationSerializable {
 			return inventory.getData()[ordinal()];
 		}
 
-		protected abstract Object getDefaultValue();
+		protected Object getDefaultValue() {
+			Bukkit.getLogger().warning("PlayerInventory.class:getDefaultValue(): No default value has been provided for player attr " + InventoryProperties.values()[ordinal()].name());
+			Thread.dumpStack();
+			return null;
+		}
 		
 		public void resetProperty(PlayerInventory inventory){
-			setProperty(inventory.getData(), getDefaultValue());
+			Object obj = getDefaultValue();
+			if(obj != null) {
+				setProperty(inventory.getData(), obj);
+			}
 		}
 
 		private static float getAsFloat(Object object) {
@@ -455,9 +356,11 @@ public class PlayerInventory implements ConfigurationSerializable {
 	 * @param player
 	 * @param inventory
 	 */
-	public static void setPlayerInventory(Player player,
-			PlayerInventory inventory) {
+	public static void setPlayerInventory(Player player, PlayerInventory inventory) {
 		for (InventoryProperties prop : InventoryProperties.values()) {
+			if(prop.getPropertyFromInventory(inventory) == null){
+				prop.resetProperty(inventory);
+			}
 			prop.setPropertyFromInventory(player, inventory);
 		}
 	}

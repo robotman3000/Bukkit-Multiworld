@@ -3,6 +3,10 @@ shouldBeSneaking: true
 minRemainingDurability: 2
 chargeDurability: true
 chargeDurabilityCreative: false
+veinMiningEnabled: false
+pickItems:
+- IRON_PICKAXE
+- DIAMOND_PICKAXE
 axeItems:
 - STONE_AXE
 - WOOD_AXE

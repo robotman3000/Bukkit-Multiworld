@@ -78,5 +78,5 @@ public enum WorldPropertyList implements PropertyList {
             world.setAutoSave(Boolean.valueOf(newValue));
             return true;
         }
-    };
+    }
 }

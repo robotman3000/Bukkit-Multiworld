@@ -1,10 +1,11 @@
 name: SpigotPlus-Multiworld
 main: io.github.robotman3000.bukkit.multiworld.world.WorldManager
-version: 1.0
+version: 1.1
 depend: [SpigotPlus-API]
 description: A plugin to add multiworld support to your server
 author: robotman3001
 website: https://github.com/robotman3000/Spigot-Plus
+loadbefore: [SpigotPlus-Inventory]
 commands:
    worldcreate:
       description: Creates a world

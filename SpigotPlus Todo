@@ -1,0 +1,15 @@
+Treecapitator
+	Configurable minimum axe durability
+	Items that break trees are configurable
+	Permissions configure what players and gamemodes work
+	#Should the player be shifting to activate it
+	#Configurable limit to the logs that can be broken at a time
+	Subtract a percentage of the axe durability for the logs broken
+
+Deathchest
+	#If the game rule keepInventory is enabled then don't do anything
+	Blacklist items from being saved
+	Permissions to configure what players and world are allowed to use the mod
+	#Configurable to allow creating a double chest
+	Configurable to allow the placing of al or certain items into an ender chest
+	#Configurable to allow the generation of a chest

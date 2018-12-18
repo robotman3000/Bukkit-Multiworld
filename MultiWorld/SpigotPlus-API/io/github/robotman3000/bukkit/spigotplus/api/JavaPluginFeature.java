@@ -9,6 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class JavaPluginFeature extends JavaPlugin implements Listener {
 
+	//TODO: Add a JavaPluginConfig API
+	
 	public static final int API_MAJOR_VERSION = 1;
 	public static final int API_MINOR_VERSION = 0;
 	private boolean loadFailed = false;

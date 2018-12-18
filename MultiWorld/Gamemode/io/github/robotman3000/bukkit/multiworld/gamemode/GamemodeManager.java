@@ -18,6 +18,9 @@ import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginFeature;
 
 public class GamemodeManager extends JavaPluginFeature {
 
+	//TODO: Make gamemodes be per player per world
+	//TODO: Add commands to list and set the gamemode config
+	
     private final HashMap<String, GameMode> gamemodes = new HashMap<>();
 
     private void forceGamemode(PlayerEvent evt) {
@@ -80,7 +83,7 @@ public class GamemodeManager extends JavaPluginFeature {
     		event.getPlayer().sendMessage("You are not permitted to use the " + newMode + " gamemode in this world");
     		
     		if(!modeFound){
-    			logWarn("The player " + event.getPlayer().getName() + " is not permitted to use any gamemode in the world \"" + worldName + "\"");
+    			logSevere("The player " + event.getPlayer().getName() + " is not permitted to use any gamemodes in the world \"" + worldName + "\"");
     			event.getPlayer().kickPlayer("There is a configuration error with the gamemodes you are permitted to use. Please contact the server administrator");
     		}
     	}

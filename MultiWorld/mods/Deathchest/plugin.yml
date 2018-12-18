@@ -1,7 +1,7 @@
 name: SpigotPlus-DeathChest
 main: io.github.robotman3000.bukkit.spigotplus.mods.deathchest.mod_DeathChest
 version: 1.0
-description: Saves a players inventory to a chest when they die
+description: Saves a players inventory to a chest when they die. Based off of the old Modloader mod. 
 author: robotman3001
 website: https://github.com/robotman3000/Spigot-Plus
 depend: [SpigotPlus-API]

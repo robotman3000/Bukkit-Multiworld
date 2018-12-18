@@ -27,6 +27,7 @@ public class WorldKey implements ConfigurationSerializable {
 	}
 
 	public UUID getWorldID() {
+		// Note to self; When this is called always check if the result is null
 		return worldID;
 	}
 
@@ -38,14 +39,18 @@ public class WorldKey implements ConfigurationSerializable {
 	public Map<String, Object> serialize() {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", worldName);
-		map.put("id", worldID);
-		map.put("gamemodes", gamemodes);
+		map.put("id", worldID.toString());
+		List<String> gModes = new ArrayList<>();
+		for(GameMode gamemode : gamemodes){
+			gModes.add(gamemode.name());
+		}
+		map.put("gamemodes", gModes);
 		return map;
 	}
 	
 	public static WorldKey deserialize(Map<String, Object> map) {
 		String name = (String) map.get("name");
-		UUID id = (UUID) map.get("id");
+		UUID id = UUID.fromString((String) map.get("id"));
 		List<String> gamemodes = (List<String>) map.get("gamemodes");
 		
 		List<GameMode> list = new ArrayList<>();
@@ -53,6 +58,7 @@ public class WorldKey implements ConfigurationSerializable {
 			try {
 				list.add(GameMode.valueOf(str));
 			} catch (Exception e){
+				e.printStackTrace();
 				//TODO: Print an error
 			}
 		}

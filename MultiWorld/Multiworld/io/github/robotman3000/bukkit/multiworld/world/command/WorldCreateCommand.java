@@ -1,5 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.world.command;
 
+import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
 import io.github.robotman3000.bukkit.multiworld.world.WorldManagerHelper;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommand;
 import io.github.robotman3000.bukkit.spigotplus.api.command.BooleanParameter;
@@ -45,22 +46,20 @@ public class WorldCreateCommand extends JavaPluginCommand {
 				}
 			
 	            if(!WorldManagerHelper.isWorldFolder(new File(Bukkit.getWorldContainer(), (String) params[0]))){
-	            	
-	                WorldCreator creator = new WorldCreator((String) params[0]);
-	                
-	                String seedStr = (String) params[1];
-	                long seed = seedStr.hashCode();
-	                try {
-	                	seed = Long.valueOf(seedStr);
-	                } catch (NumberFormatException e){}
-	             
-	                creator.seed(seed);
-	                creator.type((WorldType) params[2]);
-	                creator.environment((Environment) params[3]);
-	                creator.generateStructures((boolean) params[4]);
-
 	                sender.sendMessage("Generating world");
-	                creator.createWorld().save();
+	                generateWorld(params);
+	                if(WorldManager.self.isGeneratePortalWorlds() && params[3] == Environment.NORMAL) {
+	                	String baseName = (String) params[0];
+	                	params[0] = baseName + "_nether";
+	                	params[3] = Environment.NETHER;
+	                	sender.sendMessage("Generating nether world");
+	                	generateWorld(params);
+	                	
+	                	params[0] = baseName + "_the_end";
+	                	params[3] = Environment.THE_END;
+	                	sender.sendMessage("Generating the end world");
+	                	generateWorld(params);
+	                }
 	                //Bukkit.getLogger().info("Generator String: " + creator.generatorSettings());
 	                sender.sendMessage("Done generating world");
 	                return true;
@@ -71,10 +70,24 @@ public class WorldCreateCommand extends JavaPluginCommand {
 		} else {
 			sender.sendMessage(ChatColor.RED + "You must provide at least a world name");
 		}
-        
         return false;
 	}
 
+	private void generateWorld(Object[] params) {
+        WorldCreator creator = new WorldCreator((String) params[0]);
+        
+        String seedStr = (String) params[1];
+        long seed = seedStr.hashCode();
+        try {
+        	seed = Long.valueOf(seedStr);
+        } catch (NumberFormatException e){}
+     
+        creator.seed(seed);
+        creator.type((WorldType) params[2]);
+        creator.environment((Environment) params[3]);
+        creator.generateStructures((boolean) params[4]);
+        creator.createWorld().save();
+	}
 	@Override
 	protected void initializeParameters(List<CommandParameter<?>> params) {
 		//<World Name> <Seed> <World Type> <World Environment> <Generate Structures>

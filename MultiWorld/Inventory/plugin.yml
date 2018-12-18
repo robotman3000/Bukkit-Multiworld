@@ -1,3 +1,7 @@
 name: SpigotPlus-Inventory
 main: io.github.robotman3000.bukkit.multiworld.inventory.InventoryManager
-version: 1.0
+version: 1.1
+depend: [SpigotPlus-API]
+description: A plugin to add inventory management to your server
+author: robotman3001
+website: https://github.com/robotman3000/Spigot-Plus

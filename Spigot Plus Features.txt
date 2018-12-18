@@ -1,0 +1,169 @@
+Optional = ()
+Implied or Use Default = []
+Required = <>
+
+Multiworld
+	- Commands
+		worldcreate <World Name> [Seed] [Generator Type] [Environment] [Generate Structures]
+			spigotplus.multiworld.command.create
+
+		worlddelete <World Name>
+			spigotplus.multiworld.command.delete
+
+		worldload <World Name>
+			spigotplus.multiworld.command.load.[World]
+
+		worldunload <World Name>
+			spigotplus.multiworld.command.unload.[World]
+
+		worldgamerule [World Name] <Gamerule> (New Value)
+			spigotplus.multiworld.command.gamerule.get.[World]
+			spigotplus.multiworld.command.gamerule.set.[World]
+
+		worldproperty [World Name] <Property> (New Value)
+			spigotplus.multiworld.command.property.get.[World]
+			spigotplus.multiworld.command.property.set.[World]
+
+		worldinfo [World Name]
+			spigotplus.multiworld.command.info.[World]
+
+		worldgoto <World Name> [Player]
+			spigotplus.multiworld.command.goto.others
+			spigotplus.multiworld.command.goto.self
+
+		worldconfirm
+			spigotplus.multiworld.command.confirm
+
+		worldlist
+			spigotplus.multiworld.command.list
+
+	- Config File
+		Auto load worlds
+		List of worlds to load
+		Confirm wait duration
+		Safe Spawn Mode
+
+	- Permissions
+		spigotplus.multiworld.enter.[World Name]
+		spigotplus.multiworld.leave.[World Name]
+
+	- Features
+		Safe Spawn Checking
+		Multiworld
+
+Inventory Manager
+	- Commands
+		inventorycreate <Player> <Gamemode> <World>
+			spigotplus.inventory.command.create
+
+		inventorydelete <Player> <Gamemode> <World>
+			spigotplus.inventory.command.delete
+
+		inventoryconfirm
+			spigotplus.inventory.command.confirm
+
+		inventorylist
+			spigotplus.inventory.command.list.self
+			spigotplus.inventory.command.list.others
+
+		inventoryinfo <Inventory Key>
+			spigotplus.inventory.command.info.self
+			spigorplus.inventory.command.info.others
+
+	- Config File
+		World Groups
+		Seperate gamemode inventories
+
+	- Permissions
+		spigotplus.inventory.switch.group.[World Group].[Gamemode]
+		spigotplus.inventory.switch.world.[World].[Gamemode]
+
+Gamemode Manager
+	- Config File
+		Default World Gamemodes
+
+	- Permissions
+		spigotplus.gamemode.[World].[Gamemode]
+
+Teleport Manager
+	- Commands
+		portalworldlink <Link Type> <Source World> <Destination World>
+			spigotplus.teleport.commands.worldlink
+
+		portalinfo <Portal Chain> <Portal Index>
+			spigotplus.teleport.commands.info
+
+		portallist <Portal Chain>
+			spigotplus.teleport.commands.list.self
+			spigotplus.teleport.commands.list.others
+			
+		portalchaindelete <Portal Chain>
+			spigotplus.teleport.commands.chain.delete.self
+			spigotplus.teleport.commands.chain.delete.others
+		
+		portalchainlist
+			spigotplus.teleport.commands.chain.list
+
+	- Config File
+		Portal Max Size
+		Required Portal Blocks
+		Enable water portals
+		Portal item
+		Portal item recipie
+		Max portal chain size
+		Allow portals to be destroyed without a player
+
+	- Permissions
+		spigotplus.teleport.portal.create
+		spigotplus.teleport.portal.delete.others
+		spigotplus.teleport.portal.delete.self
+		spigotplus.teleport.portal.modify.[Operation]
+		spigotplus.teleport.portal.use.[Portal Chain]
+
+Chat Manager
+	- Commands
+		chataddchanel <Channel Name>
+			spigotplus.chat.commands.channel.add
+
+		chatdeletechanel <Channel Name>
+			spigotplus.chat.commands.channel.delete
+		
+		chatmodifychannel <Channel Name> <Modify Operation> <Argument List>...
+			spigotplus.chat.commands.channel.modify.[Modify Operation]
+
+		chatlistchannels
+			spigotplus.chat.commands.channel.list
+
+		chatunmute <Chat Source>
+			spigotplus.chat.commands.channel.unmute
+
+		chatmute <Chat Source>
+			spigotplus.chat.commands.channel.mute
+
+		chatsilence <Chat Source>
+			spigotplus.chat.commands.source.silence
+
+		chatlisten <Chat Source>
+			spigotplus.chat.commands.source.listen
+
+	- Config File
+		List of channels and sources in each channel
+		List of filtered words and the replacement
+		Block messages with filtered words
+		Auto silence
+		Auto silence duration
+		Apend Current world name in chat
+		List of chat classes
+
+	- Permissions
+		spigotplus.chat.unsilencable
+		spigotplus.chat.unmutable
+		spigotplus.chat.class.[Class Name]
+		spigotplus.chat.listen.world.[World Name]
+		spigotplus.chat.listen.player.[Player Name]
+		spigotplus.chat.listen.channel.[Channel Name]
+		spigotplus.chat.listen.class.[Class Name]
+
+Death Messages
+	- Config File
+		List of death causes and mesages

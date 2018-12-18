@@ -1,5 +1,6 @@
 package io.github.robotman3000.bukkit.multiworld.world.command;
 
+import io.github.robotman3000.bukkit.multiworld.world.WorldManager;
 import io.github.robotman3000.bukkit.multiworld.world.WorldManagerHelper;
 import io.github.robotman3000.bukkit.spigotplus.api.JavaPluginCommand;
 import io.github.robotman3000.bukkit.spigotplus.api.command.CommandParameter;
@@ -27,7 +28,7 @@ public class WorldLoadCommand extends JavaPluginCommand {
 				if(WorldManagerHelper.isWorldFolder(worldFile)){
 					if(sender.hasPermission("spigotplus.multiworld.command.load." + args[0])){
 						sender.sendMessage("Loading the world \"" + args[0] + "\"");
-						WorldManagerHelper.loadWorld(worldFile);
+						WorldManagerHelper.loadWorld(WorldManager.self, worldFile);
 						sender.sendMessage("Done loading the world \"" + args[0] + "\"");
 						return true;
 					} else {

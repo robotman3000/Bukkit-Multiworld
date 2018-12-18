@@ -42,6 +42,8 @@ public class WorldManagerHelper {
                 "PVP Enabled: " + world.getPVP(),
                 "Autosave Enabled: " + world.isAutoSave(),
                 "Spawn Location: " + world.getSpawnLocation(),
+                "Nether Dest: " + WorldManager.self.worldPropsMap.get(world.getUID()).getProperty("netherPortalDest"),
+                "End Dest: " + WorldManager.self.worldPropsMap.get(world.getUID()).getProperty("endPortalDest"),
                 "Gamerules: " + Arrays.asList(printGamerules(world)) };
     }
 
@@ -100,7 +102,7 @@ public class WorldManagerHelper {
         return build.toString();
     }
 
-    public static void loadWorld(File file) {
+    public static void loadWorld(WorldManager parent, File file) {
         WorldCreator creator = new WorldCreator(file.getName());
         Properties props = new Properties();
         File theFile = new File(file, "world.properties");
@@ -119,17 +121,21 @@ public class WorldManagerHelper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
+
         creator.seed(Long.valueOf(props.getProperty("seed", String.valueOf(1234567))));
         creator.type(WorldType.valueOf(props.getProperty("type", "NORMAL")));
         creator.environment(Environment.valueOf(props.getProperty("enviroment", "NORMAL")));
         creator.generateStructures(Boolean.valueOf(props.getProperty("generateStructures", String.valueOf(true))));
-        creator.createWorld();
+        World world = creator.createWorld();
+        props.putIfAbsent("endPortalDest", world.getName() + "_the_end");
+    	props.putIfAbsent("netherPortalDest", world.getName() + "_nether");
+        parent.worldPropsMap.put(world.getUID(), props);
 	}
 
-    public static void saveWorldConfig(World world) {
+    public static Properties saveWorldConfig(WorldManager parent, World world) {
     	File folder = world.getWorldFolder();
-    	Properties worldProps = new Properties();
+    	Properties worldProps = parent.worldPropsMap.getOrDefault(world.getUID(), new Properties());
+    	
     	worldProps.setProperty("seed", String.valueOf(world.getSeed()));
     	worldProps.setProperty("type", world.getWorldType().name());
     	worldProps.setProperty("enviroment", world.getEnvironment().name());
@@ -139,6 +145,7 @@ public class WorldManagerHelper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+    	return worldProps;
 	}
 
 	public static Location getSafestSpawnPoint(World world) {
