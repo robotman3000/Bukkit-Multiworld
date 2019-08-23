@@ -15,10 +15,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/enims/Applications/Eclipse/Git/main/ ProtocolSupport/dllibs/spigot-1.11.2-R0.1-SNAPSHOT.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://hub.spigotmc.org/javadocs/spigot/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="/home/enims/Invisible/Spigot Build/Spigot/Spigot-API/target/spigot-api-1.13.2-R0.1-SNAPSHOT.jar" sourcepath="/home/enims/Invisible/Spigot Build/Spigot/Spigot-API/src/main/java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
